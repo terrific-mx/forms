@@ -34,7 +34,7 @@ new class extends Component {
             <form wire:submit="save" class="grid grid-cols-1 gap-8">
                 <flux:heading level="1" size="lg">{{ __('Create New Form') }}</flux:heading>
                 <flux:input wire:model="name" name="name" :label="__('Form Name')" required />
-                <flux:textarea wire:model="forward_to" name="forward_to" :label="__('Forward To')" :badge="__('Optional')" :description="__('Enter one email address per line.')" rows="4" />
+                <flux:textarea wire:model="forward_to" name="forward_to" :label="__('Forward To')" :badge="__('Optional')" :description:trailing="__('Enter one email address per line.')" rows="4" />
                 <flux:error name="forward_to_emails" />
                 <flux:button type="submit" variant="primary">{{ __('Create Form') }}</flux:button>
             </form>
