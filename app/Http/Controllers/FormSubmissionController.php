@@ -15,6 +15,9 @@ class FormSubmissionController extends Controller
 
         $submission = $form->submissions()->create([
             'data' => $data,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'referrer' => $request->headers->get('referer'),
         ]);
 
         return redirect("/f/{$form->ulid}/thank-you");

@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Form::class)->constrained('forms')->onDelete('cascade');
             $table->json('data');
+            $table->string('ip_address', 45)->nullable();
+            $table->string('user_agent', 1024)->nullable();
+            $table->string('referrer', 2048)->nullable();
             $table->timestamps();
         });
     }

@@ -13,11 +13,18 @@ it('stores all post data in the data field and redirects', function () {
         'field2' => 'value2',
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_USER_AGENT' => 'TestAgent/1.0',
+        'HTTP_REFERER' => 'https://example.com/ref',
+        'REMOTE_ADDR' => '123.123.123.123',
+    ]);
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
 
     $this->assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
+        'ip_address' => '123.123.123.123',
+        'user_agent' => 'TestAgent/1.0',
+        'referrer' => 'https://example.com/ref',
     ]);
 
     $submission = $form->submissions()->latest()->first();
