@@ -24,7 +24,7 @@ class FormSubmissionController extends Controller
 
         // Notify all emails in forward_to if set
         if (!empty($form->forward_to)) {
-            $emails = array_filter(array_map('trim', preg_split('/[;,\n]+/', $form->forward_to)));
+            $emails = array_filter(array_map('trim', preg_split('/\r?\n/', $form->forward_to)));
             foreach ($emails as $email) {
                 Notification::route('mail', $email)
                     ->notify(new FormSubmissionReceived($form, $submission));
