@@ -11,7 +11,6 @@ it('stores all post data in the data field and redirects', function () {
     $data = [
         'field1' => 'value1',
         'field2' => 'value2',
-        '_token' => 'sometoken', // Simulate CSRF token
     ];
 
     $response = $this->post("/f/{$form->ulid}", $data);

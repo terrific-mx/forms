@@ -11,8 +11,7 @@ class FormSubmissionController extends Controller
     {
         $form = Form::where('ulid', $ulid)->firstOrFail();
 
-        // Store all request data except for the CSRF token
-        $data = $request->except(['_token']);
+        $data = $request->all();
 
         $submission = $form->submissions()->create([
             'data' => $data,
