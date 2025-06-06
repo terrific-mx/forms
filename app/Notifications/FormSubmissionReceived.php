@@ -30,7 +30,9 @@ class FormSubmissionReceived extends Notification
             ->subject('New Form Submission Received')
             ->line('A new submission has been received for the form: ' . ($this->form->name ?? $this->form->id))
             ->line('Submission Data:')
-            ->line(json_encode($this->submission->data))
+            ->line(collect($this->submission->data)->map(function ($value, $key) {
+                return $key . ': ' . $value;
+            })->implode("\n"))
             ->line('IP Address: ' . $this->submission->ip_address)
             ->line('User Agent: ' . $this->submission->user_agent)
             ->line('Referrer: ' . $this->submission->referrer);

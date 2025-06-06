@@ -2,6 +2,7 @@
 
 use App\Models\Form;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
@@ -43,7 +44,7 @@ it('returns 404 for non-existent form', function () {
 });
 
 it('sends notification to all emails in forward_to', function () {
-    \Illuminate\Support\Facades\Notification::fake();
+    Notification::fake();
     $form = Form::factory()->create([
         'forward_to' => "one@example.com\ntwo@example.com"
     ]);
@@ -58,5 +59,5 @@ it('sends notification to all emails in forward_to', function () {
         'REMOTE_ADDR' => '123.123.123.123',
     ]);
 
-    \Illuminate\Support\Facades\Notification::assertSentOnDemandTimes(\App\Notifications\FormSubmissionReceived::class, 2);
+    Notification::assertSentOnDemandTimes(\App\Notifications\FormSubmissionReceived::class, 2);
 });
