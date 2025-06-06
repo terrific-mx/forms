@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Form extends Model
 {
@@ -19,11 +20,11 @@ class Form extends Model
         return $this->hasMany(FormSubmission::class);
     }
 
-    public function getForwardToEmailsAttribute()
+    protected function forwardToEmails(): Attribute
     {
-        if (empty($this->forward_to)) {
-            return [];
-        }
-        return array_filter(array_map('trim', preg_split('/\r?\n/', $this->forward_to)));
+        return Attribute::get(fn ($value, $attributes) =>
+            empty($attributes['forward_to'] ?? null)
+                ? []
+                : array_filter(array_map('trim', preg_split('/\r?\n/', $attributes['forward_to']))));
     }
 }
