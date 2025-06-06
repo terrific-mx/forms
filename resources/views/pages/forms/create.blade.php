@@ -10,15 +10,22 @@ new class extends Component {
 
     #[Validate('nullable|string')]
     public $forward_to = '';
+    public array $forward_to_emails = [];
 
     public function save()
     {
-        $this->validate();
+        $this->forward_to_emails = explode(PHP_EOL, $this->forward_to);
+
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'forward_to' => 'nullable|string',
+            'forward_to_emails.*' => 'email',
+        ]);
 
         Auth::user()->forms()->create([
             'name' => $this->name,
             'ulid' => (string) str()->ulid(),
-            'forward_to' => $this->forward_to,
+            'forward_to' => implode("\n", $this->forward_to_emails),
         ]);
 
         return redirect('dashboard');
