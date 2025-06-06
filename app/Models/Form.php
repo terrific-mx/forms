@@ -18,4 +18,12 @@ class Form extends Model
     {
         return $this->hasMany(FormSubmission::class);
     }
+
+    public function getForwardToEmailsAttribute()
+    {
+        if (empty($this->forward_to)) {
+            return [];
+        }
+        return array_filter(array_map('trim', preg_split('/\r?\n/', $this->forward_to)));
+    }
 }
