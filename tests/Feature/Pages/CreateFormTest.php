@@ -58,3 +58,13 @@ it('can create a form with an empty forward_to field', function () {
         'forward_to' => '',
     ]);
 });
+
+it('cannot create a form with invalid emails in forward_to', function () {
+    $user = User::factory()->create();
+
+    Volt::actingAs($user)->test('pages.forms.create')
+        ->set('name', 'Invalid Emails')
+        ->set('forward_to', "one@example.com\ninvalid-email\ntwo@example.com")
+        ->call('save')
+        ->assertHasErrors(['forward_to_emails.1' => 'email']);
+});

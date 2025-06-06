@@ -10,6 +10,7 @@ new class extends Component {
 
     #[Validate('nullable|string')]
     public $forward_to = '';
+
     public array $forward_to_emails = [];
 
     public function save()
