@@ -5,22 +5,18 @@ use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
 new class extends Component {
-    #[Validate('required|string|max:255')]
     public $name = '';
-
-    #[Validate('nullable|string')]
     public $forward_to = '';
-
     public array $forward_to_emails = [];
 
     public function save()
     {
-        $this->forward_to_emails = explode(PHP_EOL, $this->forward_to);
+        $this->forward_to_emails = array_filter(array_map('trim', preg_split('/\r?\n/', $this->forward_to)));
 
         $this->validate([
             'name' => 'required|string|max:255',
             'forward_to' => 'nullable|string',
-            'forward_to_emails.*' => 'email',
+            'forward_to_emails.*' => empty($this->forward_to) ? '' : 'email',
         ]);
 
         Auth::user()->forms()->create([
