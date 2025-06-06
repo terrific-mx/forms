@@ -30,8 +30,8 @@ new class extends Component {
 
 <x-layouts.app>
     @volt('pages.forms.create')
-        <div>
-            <form wire:submit="save">
+        <div class="w-full max-w-md mx-auto">
+            <form wire:submit="save" class="space-y-5">
                 <flux:input wire:model="name" name="name" label="{{ __('Form Name') }}" required />
                 <flux:textarea wire:model="forward_to" name="forward_to" label="{{ __('Forward To (one email per line, optional)') }}" rows="4" />
                 <flux:error name="forward_to_emails" />
