@@ -4,7 +4,9 @@ use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Livewire\Volt\Component;
 
 use function Laravel\Folio\middleware;
+use function Laravel\Folio\name;
 
+name('dashboard');
 middleware(['auth', ValidateSessionWithWorkOS::class]);
 
 new class extends Component {
@@ -12,7 +14,7 @@ new class extends Component {
 }; ?>
 
 <x-layouts.app :title="__('Forms')">
-    @volt('pages.index')
+    @volt('pages.dashboard')
         <div>
             <flux:table>
                 <flux:table.columns>
