@@ -27,11 +27,15 @@ new class extends Component {
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Name</flux:table.column>
+                    <flux:table.column>Endpoint</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($forms as $form)
                         <flux:table.row>
                             <flux:table.cell>{{ $form->name }}</flux:table.cell>
+                            <flux:table.cell>
+                                <code>{{ url('/f/' . $form->ulid) }}</code>
+                            </flux:table.cell>
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>
