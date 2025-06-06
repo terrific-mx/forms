@@ -22,13 +22,9 @@ class FormSubmissionController extends Controller
             'referrer' => $request->headers->get('referer'),
         ]);
 
-        // Notify all emails in forward_to if set
-        if (!empty($form->forward_to_emails)) {
-            foreach ($form->forward_to_emails as $email) {
-                Notification::route('mail', $email)
-                    ->notify(new FormSubmissionReceived($form, $submission));
-            }
-        }
+        collect($form->forward_to_emails)
+            ->each(fn($email) => Notification::route('mail', $email)
+            ->notify(new FormSubmissionReceived($form, $submission)));
 
         return redirect("/f/{$form->ulid}/thank-you");
     }
