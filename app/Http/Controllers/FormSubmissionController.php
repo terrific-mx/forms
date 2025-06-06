@@ -11,12 +11,11 @@ class FormSubmissionController extends Controller
     {
         $form = Form::where('ulid', $ulid)->firstOrFail();
 
-        $validated = $request->validate([
-            'data' => 'required|array',
-        ]);
+        // Store all request data except for the CSRF token
+        $data = $request->except(['_token']);
 
         $submission = $form->submissions()->create([
-            'data' => $validated['data'],
+            'data' => $data,
         ]);
 
         return redirect("/f/{$form->ulid}/thank-you");
