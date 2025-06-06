@@ -3,6 +3,7 @@
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Livewire\Volt\Component;
 use App\Models\Form;
+use Illuminate\Support\Facades\Auth;
 
 use function Laravel\Folio\middleware;
 use function Laravel\Folio\name;
@@ -15,7 +16,7 @@ new class extends Component {
 
     public function mount()
     {
-        $this->forms = Form::all();
+        $this->forms = Auth::user()->forms;
     }
 }; ?>
 

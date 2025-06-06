@@ -21,7 +21,7 @@ it('allows authenticated users to visit the dashboard', function () {
 it('shows created forms on the dashboard', function () {
     $user = User::factory()->create();
 
-    Form::factory()->count(3)->sequence(
+    Form::factory()->for($user)->count(3)->sequence(
         ['name' => 'Contact Form'],
         ['name' => 'Feedback Form'],
         ['name' => 'Registration Form'],
@@ -33,4 +33,23 @@ it('shows created forms on the dashboard', function () {
     $response->assertSee('Contact Form');
     $response->assertSee('Feedback Form');
     $response->assertSee('Registration Form');
+});
+
+it('shows only the authenticated user\'s forms on the dashboard', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    // Forms for the authenticated user
+    Form::factory()->for($user)->create(['name' => 'Contact Form']);
+    Form::factory()->for($user)->create(['name' => 'Feedback Form']);
+    // Form for another user
+    Form::factory()->for($otherUser)->create(['name' => 'Other User Form']);
+
+    $this->actingAs($user);
+    $response = $this->get('/dashboard');
+
+    $response->assertOk();
+    $response->assertSee('Contact Form');
+    $response->assertSee('Feedback Form');
+    $response->assertDontSee('Other User Form');
 });
