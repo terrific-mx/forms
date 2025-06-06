@@ -23,6 +23,7 @@ new class extends Component {
 <x-layouts.app :title="__('Forms')">
     @volt('pages.dashboard')
         <div>
+            <flux:button href="/forms/create">{{ __('Create Form') }}</flux:button>
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Name</flux:table.column>
