@@ -2,6 +2,7 @@
 
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Livewire\Volt\Component;
+use App\Models\Form;
 
 use function Laravel\Folio\middleware;
 use function Laravel\Folio\name;
@@ -10,7 +11,12 @@ name('dashboard');
 middleware(['auth', ValidateSessionWithWorkOS::class]);
 
 new class extends Component {
+    public $forms;
 
+    public function mount()
+    {
+        $this->forms = Form::all();
+    }
 }; ?>
 
 <x-layouts.app :title="__('Forms')">
@@ -21,15 +27,11 @@ new class extends Component {
                     <flux:table.column>Name</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
-                    <flux:table.row>
-                        <flux:table.cell>Contact Form</flux:table.cell>
-                    </flux:table.row>
-                    <flux:table.row>
-                        <flux:table.cell>Feedback Form</flux:table.cell>
-                    </flux:table.row>
-                    <flux:table.row>
-                        <flux:table.cell>Registration Form</flux:table.cell>
-                    </flux:table.row>
+                    @foreach ($forms as $form)
+                        <flux:table.row>
+                            <flux:table.cell>{{ $form->name }}</flux:table.cell>
+                        </flux:table.row>
+                    @endforeach
                 </flux:table.rows>
             </flux:table>
         </div>
