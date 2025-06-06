@@ -13,10 +13,6 @@ class FormSubmission extends Model
         'data' => 'array',
     ];
 
-    protected $fillable = [
-        'form_id', 'data', 'ip_address', 'user_agent', 'referrer', 'reply_email',
-    ];
-
     public function form()
     {
         return $this->belongsTo(Form::class);
