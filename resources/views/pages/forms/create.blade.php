@@ -12,6 +12,7 @@ new class extends Component {
     {
         Auth::user()->forms()->create([
             'name' => $this->name,
+            'ulid' => (string) str()->ulid(),
         ]);
 
         return redirect('dashboard');
