@@ -8,7 +8,7 @@ new class extends Component {
     #[Validate('required|string|max:255')]
     public $name = '';
 
-    public function submit()
+    public function save()
     {
         Auth::user()->forms()->create([
             'name' => $this->name,
@@ -21,7 +21,7 @@ new class extends Component {
 <x-layouts.app>
     @volt('pages.forms.create')
         <div>
-            <form wire:submit="">
+            <form wire:submit="save">
                 <flux:input wire:model="name" name="name" label="{{ __('Form Name') }}" required />
                 <flux:button type="submit">{{ __('Create Form') }}</flux:button>
             </form>

@@ -13,7 +13,7 @@ it('can create a form', function () {
 
     Volt::actingAs($user)->test('pages.forms.create')
         ->set('name', 'Test Form')
-        ->call('submit')
+        ->call('save')
         ->assertRedirect('dashboard');
 
     assertDatabaseHas('forms', [
