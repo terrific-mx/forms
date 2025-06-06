@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -35,6 +34,7 @@ new class extends Component {
             <form wire:submit="save">
                 <flux:input wire:model="name" name="name" label="{{ __('Form Name') }}" required />
                 <flux:textarea wire:model="forward_to" name="forward_to" label="{{ __('Forward To (one email per line, optional)') }}" rows="4" />
+                <flux:error name="forward_to_emails" />
                 <flux:button type="submit">{{ __('Create Form') }}</flux:button>
             </form>
         </div>
