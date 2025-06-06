@@ -32,7 +32,10 @@ new class extends Component {
     @volt('pages.forms.create')
         <div class="w-full max-w-md mx-auto">
             <form wire:submit="save" class="grid grid-cols-1 gap-8">
-                <flux:heading level="1" size="lg">{{ __('Create New Form') }}</flux:heading>
+                <div class="grid gap-1">
+                    <flux:heading level="1" size="lg">{{ __('Create New Form') }}</flux:heading>
+                    <flux:text>{{ __('Create a new form to collect information from users.') }}</flux:text>
+                </div>
                 <flux:input wire:model="name" name="name" :label="__('Form Name')" required />
                 <flux:textarea wire:model="forward_to" name="forward_to" :label="__('Forward To')" :badge="__('Optional')" :description:trailing="__('Enter one email address per line.')" rows="4" />
                 <flux:error name="forward_to_emails" />
