@@ -22,12 +22,20 @@ new class extends Component {
 
 <x-layouts.app :title="__('Forms')">
     @volt('pages.dashboard')
-        <div>
-            <flux:button href="/forms/create">{{ __('Create Form') }}</flux:button>
+        <div class="mx-auto max-w-6xl grid gap-8">
+            <div class="flex justify-between">
+                <div>
+                    <flux:heading level="1" size="xl">{{ __('Forms') }}</flux:heading>
+                    <flux:text>{{ __('Manage your forms.') }}</flux:text>
+                </div>
+                <div>
+                    <flux:button href="/forms/create" variant="primary" wire:navigate>{{ __('Create Form') }}</flux:button>
+                </div>
+            </div>
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>Name</flux:table.column>
-                    <flux:table.column>Endpoint</flux:table.column>
+                    <flux:table.column>{{ __('Name') }}</flux:table.column>
+                    <flux:table.column>{{ __('Endpoint') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($forms as $form)
