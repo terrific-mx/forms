@@ -11,6 +11,47 @@ Terrific Forms provides form endpoints so you can use them on simple sites—lik
 - **Simple and private:** Just HTML and CSS. We don’t inject anything or track your users.
 - **Email forwarding:** Configure your forms to forward submissions to any email address you choose.
 
+## Tech Stack
+- **UI:** Built with [Flux UI PRO](https://fluxui.dev/)
+- **Authentication:** Powered by [WorkOS](https://workos.com/) for secure, enterprise-ready authentication
+
+## Setup Instructions
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/your-username/terrific-forms.git
+   cd terrific-forms
+   ```
+2. **Install dependencies:**
+   ```sh
+   composer install
+   npm install
+   ```
+3. **Copy and configure environment file:**
+   ```sh
+   cp .env.example .env
+   # Edit .env to set your database, mail, and WorkOS settings
+   # (WorkOS settings are required for authentication)
+   ```
+4. **Generate application key:**
+   ```sh
+   php artisan key:generate
+   ```
+5. **Run migrations:**
+   ```sh
+   php artisan migrate
+   ```
+6. **Build frontend assets:**
+   ```sh
+   npm run build
+   ```
+7. **Start the development server:**
+   ```sh
+   php artisan serve
+   ```
+
+Now you can access Terrific Forms at `http://localhost:8000`.
+
 ## How it works
 1. Create a form in Terrific Forms to get a unique POST endpoint.
 2. Optionally, set up email forwarding for your form submissions.
