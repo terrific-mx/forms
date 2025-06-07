@@ -60,7 +60,7 @@ Now you can access Terrific Forms at `http://localhost:8000`.
 
 ## Example
 ```html
-<form action="https://forms.terrific.com.mx/f/your-form-ulid" method="POST">
+<form action="https://example.com/f/your-form-ulid" method="POST">
   <input type="text" name="name" placeholder="Your Name" required />
   <input type="email" name="email" placeholder="Your Email" required />
   <button type="submit">Send</button>
