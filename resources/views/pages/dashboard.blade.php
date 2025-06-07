@@ -36,6 +36,7 @@ new class extends Component {
                 <flux:table.columns>
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
                     <flux:table.column>{{ __('Endpoint') }}</flux:table.column>
+                    <flux:table.column>{{ __('Forwarding To') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($forms as $form)
@@ -44,6 +45,7 @@ new class extends Component {
                             <flux:table.cell>
                                 <code>{{ url('/f/' . $form->ulid) }}</code>
                             </flux:table.cell>
+                            <flux:table.cell>{{ collect($form->forwardToEmails)->implode(', ') }}</flux:table.cell>
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>
