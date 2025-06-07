@@ -19,7 +19,7 @@ Terrific Forms provides form endpoints so you can use them on simple sites—lik
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/your-username/terrific-forms.git
+   git clone https://github.com/terrific-mx/terrific-forms.git
    cd terrific-forms
    ```
 2. **Install dependencies:**
