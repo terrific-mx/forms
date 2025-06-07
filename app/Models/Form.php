@@ -27,4 +27,11 @@ class Form extends Model
                 ? []
                 : array_filter(array_map('trim', preg_split('/\r?\n/', $attributes['forward_to']))));
     }
+
+    protected function formattedEmbedded(): Attribute
+    {
+        return Attribute::get(fn ($value, $attributes) =>
+            '<form action="' . url('/f/' . $attributes['ulid']) . '" method="POST">'
+        );
+    }
 }

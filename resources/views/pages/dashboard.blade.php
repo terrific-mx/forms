@@ -22,7 +22,7 @@ new class extends Component {
 
 <x-layouts.app :title="__('Forms')">
     @volt('pages.dashboard')
-        <div class="mx-auto max-w-6xl grid gap-8">
+        <div class="mx-auto max-w-7xl grid gap-8">
             <div class="flex justify-between">
                 <div>
                     <flux:heading level="1" size="xl">{{ __('Forms') }}</flux:heading>
@@ -43,7 +43,7 @@ new class extends Component {
                         <flux:table.row>
                             <flux:table.cell>{{ $form->name }}</flux:table.cell>
                             <flux:table.cell>
-                                <code>{{ url('/f/' . $form->ulid) }}</code>
+                                <flux:input :value="url('/f/' . $form->ulid)" variant="filled" size="sm" readonly copyable />
                             </flux:table.cell>
                             <flux:table.cell>{{ collect($form->forwardToEmails)->implode(', ') }}</flux:table.cell>
                         </flux:table.row>
