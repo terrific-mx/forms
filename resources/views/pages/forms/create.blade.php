@@ -33,7 +33,7 @@ new class extends Component {
         <div class="w-full max-w-md mx-auto">
             <form wire:submit="save" class="grid grid-cols-1 gap-8">
                 <div class="grid gap-2">
-                    <flux:heading level="1" size="lg">{{ __('Create New Form') }}</flux:heading>
+                    <flux:heading level="1" size="xl">{{ __('Create New Form') }}</flux:heading>
                     <flux:text>{{ __('Create a new form to collect information from users.') }}</flux:text>
                 </div>
                 <flux:input wire:model="name" name="name" :label="__('Form Name')" required />

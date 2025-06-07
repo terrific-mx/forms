@@ -24,7 +24,7 @@ new class extends Component {
     @volt('pages.dashboard')
         <div class="mx-auto max-w-7xl grid gap-8">
             <div class="flex justify-between">
-                <div>
+                <div class="grid gap-2">
                     <flux:heading level="1" size="xl">{{ __('Forms') }}</flux:heading>
                     <flux:text>{{ __('Manage your forms.') }}</flux:text>
                 </div>
