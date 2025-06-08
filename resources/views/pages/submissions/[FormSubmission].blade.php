@@ -14,6 +14,9 @@ new class extends Component {
     public function mount(FormSubmission $formSubmission)
     {
         $this->submission = $formSubmission;
+
+        // Mark the submission as seen when viewed
+        $this->submission->markAsSeen();
     }
 }; ?>
 
@@ -42,9 +45,8 @@ new class extends Component {
                     <div>
                         <div class="flex items-center gap-4">
                             <flux:heading level="1">Submission #{{ $submission->id }}</flux:heading>
-                            <flux:badge color="green" size="sm" inset="top bottom">{{ __('New') }}</flux:badge>
                         </div>
-                        <flux:text>
+                        <flux:text size="sm">
                             {{ __('From') }} {{ $submission->form->name }}
                         </flux:text>
                     </div>

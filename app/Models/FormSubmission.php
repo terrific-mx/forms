@@ -12,6 +12,7 @@ class FormSubmission extends Model
 
     protected $casts = [
         'data' => 'array',
+        'seen_at' => 'datetime',
     ];
 
     public function form()
@@ -61,5 +62,47 @@ class FormSubmission extends Model
                 return "$titleKey: $excerpt";
             })->implode(' · ');
         });
+    }
+
+    /**
+     * Mark the submission as seen
+     */
+    public function markAsSeen(): void
+    {
+        if ($this->seen_at === null) {
+            $this->update(['seen_at' => now()]);
+        }
+    }
+
+    /**
+     * Check if the submission is new (not seen)
+     */
+    public function isNew(): bool
+    {
+        return $this->seen_at === null;
+    }
+
+    /**
+     * Check if the submission has been seen
+     */
+    public function isSeen(): bool
+    {
+        return $this->seen_at !== null;
+    }
+
+    /**
+     * Scope a query to only include new submissions
+     */
+    public function scopeNew($query)
+    {
+        return $query->whereNull('seen_at');
+    }
+
+    /**
+     * Scope a query to only include seen submissions
+     */
+    public function scopeSeen($query)
+    {
+        return $query->whereNotNull('seen_at');
     }
 }

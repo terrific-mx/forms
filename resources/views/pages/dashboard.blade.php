@@ -16,7 +16,9 @@ new class extends Component {
 
     public function mount()
     {
-        $this->forms = Auth::user()->forms;
+        $this->forms = Auth::user()->forms()->withCount(['submissions', 'submissions as new_submissions_count' => function ($query) {
+            $query->new();
+        }])->get();
     }
 }; ?>
 
@@ -37,17 +39,33 @@ new class extends Component {
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
                     <flux:table.column>{{ __('Endpoint') }}</flux:table.column>
                     <flux:table.column>{{ __('Forwarding To') }}</flux:table.column>
+                    <flux:table.column>{{ __('Submissions') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($forms as $form)
                         <flux:table.row>
                             <flux:table.cell variant="strong">
-                                <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
+                                <div class="flex items-center gap-2">
+                                    <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
+                                    @if ($form->new_submissions_count > 0)
+                                        <flux:badge color="green" size="sm">{{ $form->new_submissions_count }} {{ __('new') }}</flux:badge>
+                                    @endif
+                                </div>
                             </flux:table.cell>
                             <flux:table.cell>
                                 <flux:input :value="url('/f/' . $form->ulid)" variant="filled" size="sm" readonly copyable />
                             </flux:table.cell>
                             <flux:table.cell>{{ collect($form->forwardToEmails)->implode(', ') }}</flux:table.cell>
+                            <flux:table.cell>
+                                <div class="flex items-center gap-2">
+                                    <flux:text>{{ $form->submissions_count }}</flux:text>
+                                    @if ($form->new_submissions_count > 0)
+                                        <flux:text size="sm" color="green">
+                                            ({{ $form->new_submissions_count }} {{ __('new') }})
+                                        </flux:text>
+                                    @endif
+                                </div>
+                            </flux:table.cell>
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>

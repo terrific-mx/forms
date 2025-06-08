@@ -41,6 +41,14 @@ class DatabaseSeeder extends Seeder
         $createSubmissions = function ($form, $submissions) {
             $baseTime = now()->subDays(count($submissions));
             foreach ($submissions as $i => $submission) {
+                $createdAt = $baseTime->copy()->addDays($i);
+                $seenAt = null;
+
+                // Mark some submissions as seen (older ones)
+                if ($i < count($submissions) * 0.6) { // 60% of submissions are marked as seen
+                    $seenAt = $createdAt->copy()->addHours(rand(1, 48));
+                }
+
                 FormSubmission::factory()->create([
                     'form_id' => $form->id,
                     'data' => [
@@ -51,7 +59,8 @@ class DatabaseSeeder extends Seeder
                     'ip_address' => $submission['ip_address'],
                     'user_agent' => $submission['user_agent'],
                     'referrer' => $submission['referrer'],
-                    'created_at' => $baseTime->copy()->addDays($i),
+                    'created_at' => $createdAt,
+                    'seen_at' => $seenAt,
                 ]);
             }
         };
