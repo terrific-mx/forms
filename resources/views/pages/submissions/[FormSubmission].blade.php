@@ -36,50 +36,60 @@ new class extends Component {
             </div>
 
             <!-- Submission Header -->
-            <div class="flex items-center justify-between mb-2.5 mt-4 lg:mt-8">
+            <div class="mt-4 lg:mt-8">
                 <div class="flex items-center gap-4">
                     <flux:heading level="1" size="lg">Submission #{{ $submission->id }}</flux:heading>
                     <flux:badge color="green" size="sm">{{ __('New') }}</flux:badge>
                 </div>
-                <div class="flex items-center gap-2">
-                    <flux:button variant="outline" size="sm">
-                        Export
-                    </flux:button>
-                    <flux:button variant="filled" size="sm">
-                        Forward
-                    </flux:button>
-                </div>
-            </div>
 
-            <!-- Submission Details -->
-            <div class="flex items-center gap-6 text-sm text-gray-600">
-                <div class="flex items-center gap-2">
-                    <flux:icon name="user" variant="micro" />
-                    @if ($submission->name)
-                        {{ $submission->name }}
-                    @else
-                        Anonymous
-                    @endif
-                </div>
-                @if ($submission->email)
-                    <div class="flex items-center gap-2">
-                        <flux:icon name="envelope" variant="micro" />
-                        {{ $submission->email }}
+                <div class="isolate mt-2.5 flex flex-wrap justify-between gap-x-6 gap-y-4">
+                    <div class="flex flex-wrap gap-x-10 gap-y-4 py-1.5">
+                        <flux:text class="flex items-center gap-3">
+                            <flux:icon name="user" variant="micro" />
+                            <span class="text-zinc-800 dark:text-white">
+                                @if ($submission->name)
+                                    {{ $submission->name }}
+                                @else
+                                    {{ __('Anonymous') }}
+                                @endif
+                            </span>
+                        </flux:text>
+
+                        @if ($submission->email)
+                            <flux:text class="flex items-center gap-3">
+                                <flux:icon name="envelope" variant="micro" />
+                                <span class="text-zinc-800 dark:text-white">
+                                    {{ $submission->email }}
+                                </span>
+                            </flux:text>
+                        @endif
+
+                        <flux:text class="flex items-center gap-3">
+                            <flux:icon name="calendar" variant="micro" />
+                            <span class="text-zinc-800 dark:text-white">
+                                {{ $submission->formatted_created_at }}
+                            </span>
+                            <flux:tooltip toggleable>
+                                <flux:button icon="information-circle" size="xs" variant="subtle" inset="left" />
+                                <flux:tooltip.content class="max-w-[20rem] space-y-2">
+                                    <p>{{ __('IP Address: ') }}{{ $submission->ip_address }}</p>
+                                    <p>{{ __('User Agent: ') }}{{ $submission->user_agent ?? 'N/A' }}</p>
+                                    @if ($submission->referrer)
+                                        <p>{{ __('Referrer: ') }}<a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a></p>
+                                    @endif
+                                </flux:tooltip.content>
+                            </flux:tooltip>
+                        </flux:text>
                     </div>
-                @endif
-                <div class="flex items-center gap-2">
-                    <flux:icon name="calendar" variant="micro" />
-                    {{ $submission->formatted_created_at }}
-                    <flux:tooltip toggleable>
-                        <flux:button icon="information-circle" size="xs" variant="ghost" inset="left" />
-                        <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                            <p>{{ __('IP Address: ') }}{{ $submission->ip_address }}</p>
-                            <p>{{ __('User Agent: ') }}{{ $submission->user_agent ?? 'N/A' }}</p>
-                            @if ($submission->referrer)
-                                <p>{{ __('Referrer: ') }}<a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a></p>
-                            @endif
-                        </flux:tooltip.content>
-                    </flux:tooltip>
+
+                    <div class="flex gap-4">
+                        <flux:button variant="outline" size="sm">
+                            Export
+                        </flux:button>
+                        <flux:button variant="filled" size="sm">
+                            Forward
+                        </flux:button>
+                    </div>
                 </div>
             </div>
 
