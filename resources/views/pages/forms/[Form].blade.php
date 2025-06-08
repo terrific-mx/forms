@@ -47,7 +47,7 @@ new class extends Component {
                 <flux:table.columns>
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
                     <flux:table.column>{{ __('Data Excerpt') }}</flux:table.column>
-                    <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('Date') }}</flux:table.column>
+                    <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')" align="end">{{ __('Date') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($this->submissions as $submission)
@@ -75,7 +75,7 @@ new class extends Component {
                                 </div>
                             </flux:table.cell>
                             <flux:table.cell class="whitespace-nowrap">
-                                <div class="flex items-center gap-2 sm:gap-4">
+                                <div class="flex justify-end items-center gap-2 sm:gap-4">
                                     {{ $submission->formatted_created_at }}
                                     <flux:tooltip toggleable>
                                         <flux:button icon="information-circle" size="sm" variant="ghost" />
