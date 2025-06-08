@@ -38,102 +38,102 @@ new class extends Component {
             <!-- Submission Header -->
             <div class="mt-4 lg:mt-8">
                 <div class="flex items-center gap-4">
-                    <flux:heading level="1" size="lg">Submission #{{ $submission->id }}</flux:heading>
-                    <flux:badge color="green" size="sm">{{ __('New') }}</flux:badge>
+                    <flux:avatar :src="$submission->avatar_url" circle />
+                    <div>
+                        <div class="flex items-center gap-4">
+                            <flux:heading level="1">Submission #{{ $submission->id }}</flux:heading>
+                            <flux:badge color="green" size="sm" inset="top bottom">{{ __('New') }}</flux:badge>
+                        </div>
+                        <flux:text>
+                            {{ __('From') }} {{ $submission->form->name }}
+                        </flux:text>
+                    </div>
                 </div>
 
-                <div class="isolate mt-2.5 flex flex-wrap justify-between gap-x-6 gap-y-4">
-                    <div class="flex flex-wrap gap-x-10 gap-y-4 py-1.5">
-                        <flux:text class="flex items-center gap-3">
+                <div class="isolate mt-6 flex flex-wrap justify-between gap-x-6 gap-y-4">
+                    <div class="flex flex-wrap gap-x-8 gap-y-4">
+                        <flux:text class="flex items-center gap-2">
                             <flux:icon name="user" variant="micro" />
-                            <span class="text-zinc-800 dark:text-white">
-                                @if ($submission->name)
-                                    {{ $submission->name }}
-                                @else
-                                    {{ __('Anonymous') }}
-                                @endif
-                            </span>
+                            {{ $submission->name ?: __('Anonymous') }}
                         </flux:text>
 
                         @if ($submission->email)
-                            <flux:text class="flex items-center gap-3">
+                            <flux:text class="flex items-center gap-2">
                                 <flux:icon name="envelope" variant="micro" />
-                                <span class="text-zinc-800 dark:text-white">
-                                    {{ $submission->email }}
-                                </span>
+                                <flux:link href="mailto:{{ $submission->email }}" variant="subtle">{{ $submission->email }}</flux:link>
                             </flux:text>
                         @endif
 
-                        <flux:text class="flex items-center gap-3">
+                        <flux:text class="flex items-center gap-2">
                             <flux:icon name="calendar" variant="micro" />
-                            <span class="text-zinc-800 dark:text-white">
-                                {{ $submission->formatted_created_at }}
-                            </span>
+                            {{ $submission->formatted_created_at }}
                             <flux:tooltip toggleable>
                                 <flux:button icon="information-circle" size="xs" variant="subtle" inset="left" />
                                 <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                                    <p>{{ __('IP Address: ') }}{{ $submission->ip_address }}</p>
-                                    <p>{{ __('User Agent: ') }}{{ $submission->user_agent ?? 'N/A' }}</p>
+                                    @if ($submission->ip_address)
+                                        <p><strong>{{ __('IP:') }}</strong> {{ $submission->ip_address }}</p>
+                                    @endif
+                                    @if ($submission->user_agent)
+                                        <p><strong>{{ __('Browser:') }}</strong> {{ $submission->user_agent }}</p>
+                                    @endif
                                     @if ($submission->referrer)
-                                        <p>{{ __('Referrer: ') }}<a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a></p>
+                                        <p><strong>{{ __('From:') }}</strong> <a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a></p>
                                     @endif
                                 </flux:tooltip.content>
                             </flux:tooltip>
                         </flux:text>
                     </div>
 
-                    <div class="flex gap-4">
-                        <flux:button size="sm">
+                    <div class="flex gap-3">
+                        <flux:button size="sm" variant="ghost" icon="exclamation-triangle">
                             {{ __('Mark as Spam') }}
                         </flux:button>
-                        <flux:button variant="primary" size="sm">
+                        <flux:button variant="primary" size="sm" icon="arrow-uturn-right">
                             {{ __('Reply') }}
                         </flux:button>
                     </div>
                 </div>
             </div>
 
-            <!-- Summary Section -->
+            <!-- Form Data Section -->
+            @if (!empty($submission->data))
+                <div class="mt-12">
+                    <flux:heading level="2">{{ __('Form Data') }}</flux:heading>
+                    <flux:separator class="mt-4" />
+
+                    <x-description-list>
+                        @foreach ($submission->data as $key => $value)
+                            @continue(in_array($key, ['_token', '_method']))
+                            <x-description-list.term>
+                                <flux:text>{{ str_replace('_', ' ', Str::title($key)) }}</flux:text>
+                            </x-description-list.term>
+                            <x-description-list.details>
+                                @include('partials.submission-value', ['value' => $value])
+                            </x-description-list.details>
+                        @endforeach
+                    </x-description-list>
+                </div>
+            @else
+                <div class="mt-12">
+                    <flux:heading level="2">{{ __('Form Data') }}</flux:heading>
+                    <flux:separator class="mt-4" />
+                    <flux:text class="text-zinc-500 dark:text-zinc-400 italic">
+                        {{ __('No form data was submitted.') }}
+                    </flux:text>
+                </div>
+            @endif
+
+            <!-- Technical Details Section -->
             <div class="mt-12">
-                <flux:heading level="2">{{ __('Summary') }}</flux:heading>
+                <flux:heading level="2">{{ __('Technical Details') }}</flux:heading>
                 <flux:separator class="mt-4" />
 
                 <x-description-list>
                     <x-description-list.term>
-                        <flux:text>{{ __('Submitter') }}</flux:text>
+                        <flux:text>{{ __('Submission ID') }}</flux:text>
                     </x-description-list.term>
                     <x-description-list.details>
-                        <div class="flex items-center gap-2">
-                            <flux:avatar
-                                circle
-                                size="xs"
-                                :src="$submission->avatar_url"
-                            />
-                            <flux:text variant="strong">
-                                @if ($submission->name)
-                                    {{ $submission->name }}
-                                @else
-                                    {{ __('Anonymous') }}
-                                @endif
-                            </flux:text>
-                            @if ($submission->email)
-                                <flux:text>{{ $submission->email }}</flux:text>
-                            @endif
-                        </div>
-                    </x-description-list.details>
-
-                    <x-description-list.term>
-                        <flux:text>{{ __('Form') }}</flux:text>
-                    </x-description-list.term>
-                    <x-description-list.details>
-                        <flux:text><flux:link href="/forms/{{ $submission->form->id }}">{{ $submission->form->name }}</flux:link></flux:text>
-                    </x-description-list.details>
-
-                    <x-description-list.term>
-                        <flux:text>{{ __('Submitted') }}</flux:text>
-                    </x-description-list.term>
-                    <x-description-list.details>
-                        <flux:text variant="strong">{{ $submission->formatted_created_at }}</flux:text>
+                        <flux:text variant="strong" class="font-mono">{{ $submission->id }}</flux:text>
                     </x-description-list.details>
 
                     @if ($submission->ip_address)
@@ -145,60 +145,6 @@ new class extends Component {
                         </x-description-list.details>
                     @endif
 
-                    @if (count($submission->data) > 0)
-                        <x-description-list.term>
-                            <flux:text>{{ __('Fields Count') }}</flux:text>
-                        </x-description-list.term>
-                        <x-description-list.details>
-                            <flux:text variant="strong">{{ count($submission->data) }} {{ Str::plural('field', count($submission->data)) }}</flux:text>
-                        </x-description-list.details>
-                    @endif
-                </x-description-list>
-            </div>
-
-            <!-- Form Data Section -->
-            @if (count($submission->data) > 0)
-                <div class="mt-12">
-                    <flux:heading level="2">{{ __('Form Data') }}</flux:heading>
-                    <flux:separator class="mt-4" />
-
-                    <x-description-list>
-                        @foreach ($submission->data as $key => $value)
-                            <x-description-list.term>
-                                <flux:text>{{ str_replace('_', ' ', Str::title($key)) }}</flux:text>
-                            </x-description-list.term>
-                            <x-description-list.details>
-                                @if (is_array($value))
-                                    <div class="space-y-1">
-                                        @foreach ($value as $item)
-                                            <flux:text variant="strong" class="block">{{ $item }}</flux:text>
-                                        @endforeach
-                                    </div>
-                                @elseif (is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL))
-                                    <flux:text>
-                                        <flux:link href="mailto:{{ $value }}" variant="strong">{{ $value }}</flux:link>
-                                    </flux:text>
-                                @elseif (is_string($value) && filter_var($value, FILTER_VALIDATE_URL))
-                                    <flux:text>
-                                        <flux:link href="{{ $value }}" target="_blank" rel="noopener noreferrer" variant="strong">{{ $value }}</flux:link>
-                                    </flux:text>
-                                @elseif (strlen($value) > 100)
-                                    <flux:text variant="strong" class="whitespace-pre-wrap">{{ $value }}</flux:text>
-                                @else
-                                    <flux:text variant="strong">{{ $value }}</flux:text>
-                                @endif
-                            </x-description-list.details>
-                        @endforeach
-                    </x-description-list>
-                </div>
-            @endif
-
-            <!-- Technical Details Section -->
-            <div class="mt-12">
-                <flux:heading level="2">{{ __('Technical Details') }}</flux:heading>
-                <flux:separator class="mt-4" />
-
-                <x-description-list>
                     @if ($submission->user_agent)
                         <x-description-list.term>
                             <flux:text>{{ __('User Agent') }}</flux:text>
@@ -220,20 +166,6 @@ new class extends Component {
                             </flux:text>
                         </x-description-list.details>
                     @endif
-
-                    <x-description-list.term>
-                        <flux:text>{{ __('Submission ID') }}</flux:text>
-                    </x-description-list.term>
-                    <x-description-list.details>
-                        <flux:text variant="strong" class="font-mono">{{ $submission->id }}</flux:text>
-                    </x-description-list.details>
-
-                    <x-description-list.term>
-                        <flux:text>{{ __('Created At') }}</flux:text>
-                    </x-description-list.term>
-                    <x-description-list.details>
-                        <flux:text variant="strong">{{ $submission->created_at->format('M j, Y \a\t g:i:s A') }}</flux:text>
-                    </x-description-list.details>
                 </x-description-list>
             </div>
         </div>
