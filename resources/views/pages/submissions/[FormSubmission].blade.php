@@ -83,11 +83,11 @@ new class extends Component {
                     </div>
 
                     <div class="flex gap-4">
-                        <flux:button variant="outline" size="sm">
-                            Export
+                        <flux:button size="sm">
+                            {{ __('Mark as Spam') }}
                         </flux:button>
-                        <flux:button variant="filled" size="sm">
-                            Forward
+                        <flux:button variant="primary" size="sm">
+                            {{ __('Reply') }}
                         </flux:button>
                     </div>
                 </div>
@@ -103,24 +103,22 @@ new class extends Component {
                         <flux:text>{{ __('Submitter') }}</flux:text>
                     </x-description-list.term>
                     <x-description-list.details>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
                             <flux:avatar
                                 circle
-                                size="sm"
+                                size="xs"
                                 :src="$submission->avatar_url"
                             />
-                            <div>
-                                <flux:text variant="strong">
-                                    @if ($submission->name)
-                                        {{ $submission->name }}
-                                    @else
-                                        {{ __('Anonymous') }}
-                                    @endif
-                                </flux:text>
-                                @if ($submission->email)
-                                    <flux:text>{{ $submission->email }}</flux:text>
+                            <flux:text variant="strong">
+                                @if ($submission->name)
+                                    {{ $submission->name }}
+                                @else
+                                    {{ __('Anonymous') }}
                                 @endif
-                            </div>
+                            </flux:text>
+                            @if ($submission->email)
+                                <flux:text>{{ $submission->email }}</flux:text>
+                            @endif
                         </div>
                     </x-description-list.details>
 
