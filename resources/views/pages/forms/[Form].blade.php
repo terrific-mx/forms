@@ -30,6 +30,24 @@ new class extends Component {
     }
 
     #[Computed]
+    public function newSubmissions()
+    {
+        return $this->form->submissions()
+            ->new()
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate(10);
+    }
+
+    #[Computed]
+    public function seenSubmissions()
+    {
+        return $this->form->submissions()
+            ->seen()
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate(10);
+    }
+
+    #[Computed]
     public function submissions()
     {
         return $this->form->submissions()
@@ -47,6 +65,7 @@ new class extends Component {
                     <flux:heading level="1" size="xl">{{ $form->name }}</flux:heading>
                     <flux:text>
                         {{ $this->submissions->total() }} {{ Str::plural('submission', $this->submissions->total()) }}
+                        ({{ $this->newSubmissions->total() }} new, {{ $this->seenSubmissions->total() }} seen)
                     </flux:text>
                 </div>
 
@@ -57,72 +76,139 @@ new class extends Component {
                 </div>
             </div>
 
-            <!-- Submissions Table -->
-            <flux:table :paginate="$this->submissions">
-                <flux:table.columns>
-                    <flux:table.column>{{ __('Submitter') }}</flux:table.column>
-                    <flux:table.column>{{ __('Data Excerpt') }}</flux:table.column>
-                    <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')" align="end">{{ __('Submitted') }}</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @forelse ($this->submissions as $submission)
-                        <flux:table.row :key="$submission->id" wire:navigate href="/submissions/{{ $submission->id }}" class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
-                            <flux:table.cell>
-                                <div class="flex items-center gap-3">
-                                    <flux:avatar
-                                        circle
-                                        size="sm"
-                                        :src="$submission->avatar_url"
-                                    />
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-2">
-                                            <flux:heading size="sm" class="truncate">
-                                                {{ $submission->name ?: __('Anonymous') }}
-                                            </flux:heading>
-                                            @if ($submission->isNew())
-                                                <flux:badge color="green" size="sm">{{ __('New') }}</flux:badge>
-                                            @endif
+            @if($this->newSubmissions->count() > 0)
+                <!-- New Submissions Table -->
+                <div class="mt-14">
+                    <div class="flex items-center gap-2">
+                        <flux:heading level="2" size="lg">{{ __('New Submissions') }}</flux:heading>
+                        <flux:badge color="green" size="sm" inset="top bottom">{{ $this->newSubmissions->total() }}</flux:badge>
+                    </div>
+
+                    <flux:table :paginate="$this->newSubmissions" class="mt-4">
+                        <flux:table.columns>
+                            <flux:table.column>{{ __('Submitter') }}</flux:table.column>
+                            <flux:table.column>{{ __('Data Excerpt') }}</flux:table.column>
+                            <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')" align="end">{{ __('Submitted') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach ($this->newSubmissions as $submission)
+                                <flux:table.row :key="$submission->id" wire:navigate href="/submissions/{{ $submission->id }}" class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+                                    <flux:table.cell>
+                                        <div class="flex items-center gap-3">
+                                            <flux:avatar
+                                                circle
+                                                size="sm"
+                                                :src="$submission->avatar_url"
+                                            />
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-2">
+                                                    <flux:heading size="sm" class="truncate">
+                                                        {{ $submission->name ?: __('Anonymous') }}
+                                                    </flux:heading>
+                                                    <flux:badge color="green" size="sm" inset="top bottom">{{ __('New') }}</flux:badge>
+                                                </div>
+                                                @if ($submission->email)
+                                                    <flux:text size="sm" class="truncate">
+                                                        {{ $submission->email }}
+                                                    </flux:text>
+                                                @endif
+                                            </div>
                                         </div>
-                                        @if ($submission->email)
-                                            <flux:text size="sm" class="truncate">
-                                                {{ $submission->email }}
-                                            </flux:text>
-                                        @endif
-                                    </div>
-                                </div>
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                <flux:text class="line-clamp-2 text-sm">
-                                    {{ $submission->excerpt ?: __('No data submitted') }}
-                                </flux:text>
-                            </flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">
-                                <div class="flex justify-end items-center gap-3">
-                                    <div class="text-right">
-                                        <flux:text size="sm" class="block">
-                                            {{ $submission->formatted_created_at }}
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:text class="line-clamp-2 text-sm">
+                                            {{ $submission->excerpt ?: __('No data submitted') }}
                                         </flux:text>
-                                    </div>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="3" class="text-center py-12">
-                                <div class="flex flex-col items-center gap-3">
-                                    <flux:icon name="inbox" class="size-12 text-zinc-400" />
-                                    <div>
-                                        <flux:heading size="sm">{{ __('No submissions yet') }}</flux:heading>
-                                        <flux:text size="sm">
-                                            {{ __('Submissions will appear here once your form receives responses.') }}
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <div class="flex justify-end items-center gap-3">
+                                            <div class="text-right">
+                                                <flux:text size="sm" class="block">
+                                                    {{ $submission->formatted_created_at }}
+                                                </flux:text>
+                                            </div>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+            @endif
+
+            @if($this->seenSubmissions->count() > 0)
+                <!-- Seen Submissions Table -->
+                <div class="mt-14">
+                    <div class="flex items-center gap-2">
+                        <flux:heading level="2">{{ __('Previous Submissions') }}</flux:heading>
+                        <flux:badge color="zinc" size="sm" inset="top bottom">{{ $this->seenSubmissions->total() }}</flux:badge>
+                    </div>
+
+                    <flux:table :paginate="$this->seenSubmissions" class="mt-4">
+                        <flux:table.columns>
+                            <flux:table.column>{{ __('Submitter') }}</flux:table.column>
+                            <flux:table.column>{{ __('Data Excerpt') }}</flux:table.column>
+                            <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')" align="end">{{ __('Submitted') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach ($this->seenSubmissions as $submission)
+                                <flux:table.row :key="$submission->id" wire:navigate href="/submissions/{{ $submission->id }}" class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+                                    <flux:table.cell>
+                                        <div class="flex items-center gap-3">
+                                            <flux:avatar
+                                                circle
+                                                size="sm"
+                                                :src="$submission->avatar_url"
+                                            />
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-2">
+                                                    <flux:heading size="sm" class="truncate">
+                                                        {{ $submission->name ?: __('Anonymous') }}
+                                                    </flux:heading>
+                                                </div>
+                                                @if ($submission->email)
+                                                    <flux:text size="sm" class="truncate">
+                                                        {{ $submission->email }}
+                                                    </flux:text>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:text class="line-clamp-2 text-sm">
+                                            {{ $submission->excerpt ?: __('No data submitted') }}
                                         </flux:text>
-                                    </div>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <div class="flex justify-end items-center gap-3">
+                                            <div class="text-right">
+                                                <flux:text size="sm" class="block">
+                                                    {{ $submission->formatted_created_at }}
+                                                </flux:text>
+                                            </div>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+            @endif
+
+            @if($this->newSubmissions->count() == 0 && $this->seenSubmissions->count() == 0)
+                <!-- Empty State -->
+                <div class="text-center py-12">
+                    <div class="flex flex-col items-center gap-3">
+                        <flux:icon name="inbox" class="size-12 text-zinc-400" />
+                        <div>
+                            <flux:heading size="sm">{{ __('No submissions yet') }}</flux:heading>
+                            <flux:text size="sm">
+                                {{ __('Submissions will appear here once your form receives responses.') }}
+                            </flux:text>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     @endvolt
 </x-layouts.app>
