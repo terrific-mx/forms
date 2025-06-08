@@ -41,7 +41,9 @@ new class extends Component {
                 <flux:table.rows>
                     @foreach ($forms as $form)
                         <flux:table.row>
-                            <flux:table.cell variant="strong">{{ $form->name }}</flux:table.cell>
+                            <flux:table.cell variant="strong">
+                                <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <flux:input :value="url('/f/' . $form->ulid)" variant="filled" size="sm" readonly copyable />
                             </flux:table.cell>
