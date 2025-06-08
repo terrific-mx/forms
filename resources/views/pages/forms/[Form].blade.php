@@ -45,21 +45,53 @@ new class extends Component {
             </div>
             <flux:table :paginate="$this->submissions">
                 <flux:table.columns>
+                    <flux:table.column></flux:table.column>
                     <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('Date') }}</flux:table.column>
                     <flux:table.column sortable :sorted="$sortBy === 'ip_address'" :direction="$sortDirection" wire:click="sort('ip_address')">{{ __('IP Address') }}</flux:table.column>
-                    <flux:table.column>{{ __('Referrer') }}</flux:table.column>
-                    <flux:table.column>{{ __('Data') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($this->submissions as $submission)
                         <flux:table.row :key="$submission->id">
-                            <flux:table.cell class="whitespace-nowrap">{{ $submission->formatted_created_at }}</flux:table.cell>
-                            <flux:table.cell>{{ $submission->ip_address }}</flux:table.cell>
-                            <flux:table.cell>{{ $submission->referrer }}</flux:table.cell>
                             <flux:table.cell>
-                                @foreach ($submission->data as $key => $value)
-                                    <div class="line-clamp-1"><span>{{ $key }}:</span> {{ is_array($value) ? json_encode($value) : $value }}</div>
-                                @endforeach
+                                <div class="flex items-center gap-2 sm:gap-4">
+                                    <flux:avatar circle size="lg" class="max-sm:size-8" :src="$submission->avatar_url" />
+                                    <div class="flex flex-col">
+                                        <flux:heading>
+                                            @if ($submission->name)
+                                                {{ $submission->name }}
+                                            @else
+                                                {{ __('Anonymous') }}
+                                            @endif
+                                        </flux:heading>
+                                        @if ($submission->email)
+                                            <flux:text class="max-sm:hidden">{{ $submission->email }}</flux:text>
+                                        @endif
+                                    </div>
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell class="whitespace-nowrap">
+                                <div class="flex items-center gap-2 sm:gap-4">
+                                    {{ $submission->formatted_created_at }}
+                                    <flux:tooltip toggleable>
+                                        <flux:button icon="information-circle" size="sm" variant="ghost" />
+                                        <flux:tooltip.content class="max-w-[20rem] space-y-2">
+                                            <p>IP Address: {{ $submission->ip_address }}</p>
+                                            <p>User Agent: {{ $submission->user_agent ?? 'N/A' }}</p>
+                                            <p>Referrer:
+                                                @if ($submission->referrer)
+                                                    <a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a>
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </p>
+                                        </flux:tooltip.content>
+                                    </flux:tooltip>
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <div class="line-clamp-1">
+                                    {{ $submission->excerpt }}
+                                </div>
                             </flux:table.cell>
                         </flux:table.row>
                     @endforeach
