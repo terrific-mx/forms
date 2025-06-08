@@ -81,9 +81,11 @@ new class extends Component {
                         <flux:button size="sm" variant="ghost" icon="exclamation-triangle">
                             {{ __('Mark as Spam') }}
                         </flux:button>
-                        <flux:button variant="primary" size="sm" icon="arrow-uturn-right">
-                            {{ __('Reply') }}
-                        </flux:button>
+                        @if ($submission->email)
+                            <flux:button href="mailto:{{ $submission->email }}" variant="primary" size="sm" icon="arrow-uturn-right">
+                                {{ __('Reply') }}
+                            </flux:button>
+                        @endif
                     </div>
                 </div>
             </div>
