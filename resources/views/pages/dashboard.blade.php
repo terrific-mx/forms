@@ -48,7 +48,7 @@ new class extends Component {
                                 <div class="flex items-center gap-2">
                                     <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
                                     @if ($form->new_submissions_count > 0)
-                                        <flux:badge color="green" size="sm">{{ $form->new_submissions_count }} {{ __('new') }}</flux:badge>
+                                        <flux:badge color="green" size="sm">{{ $form->new_submissions_count }} {{ __('New') }}</flux:badge>
                                     @endif
                                 </div>
                             </flux:table.cell>
