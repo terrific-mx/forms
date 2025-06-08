@@ -21,6 +21,6 @@ class FormSubmission extends Model
 
     protected function formattedCreatedAt(): Attribute
     {
-        return Attribute::get(fn () => $this->created_at->format('M j, Y \\a\\t g:i A'));
+        return Attribute::get(fn () => $this->created_at?->format('M j, Y \\a\\t g:i A'));
     }
 }
