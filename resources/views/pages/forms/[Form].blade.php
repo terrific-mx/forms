@@ -1,15 +1,18 @@
 <?php
 
 use App\Models\Form;
-use Illuminate\Database\Eloquent\Collection;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
+use Livewire\Attributes\Computed;
 use Livewire\Volt\Component;
+use Livewire\WithPagination;
 
 use function Laravel\Folio\middleware;
 
 middleware(['auth', ValidateSessionWithWorkOS::class]);
 
 new class extends Component {
+    use WithPagination;
+
     public Form $form;
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
@@ -24,7 +27,7 @@ new class extends Component {
         }
     }
 
-    #[\Livewire\Attributes\Computed]
+    #[Computed]
     public function submissions()
     {
         return $this->form->submissions()

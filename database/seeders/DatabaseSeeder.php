@@ -15,14 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a specific test user using the factory
         $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
             'workos_id' => 'user_01JX6KAZ7FBR7Y9DA9FNGRAJWV',
         ]);
 
-        // Create 3 forms for this user with realistic data using the factory
+        // Create 3 forms with realistic data using the factory
         $forms = [
             Form::factory()->create([
                 'name' => 'Contact Us',
