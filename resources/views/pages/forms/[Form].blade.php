@@ -38,7 +38,7 @@ new class extends Component {
 
 <x-layouts.app>
     @volt('pages.forms.show')
-        <div class="mx-auto max-w-5xl grid gap-8">
+        <div class="mx-auto max-w-7xl grid gap-8">
             <div class="grid gap-2">
                 <flux:heading level="1" size="xl">{{ $form->name }}</flux:heading>
                 <flux:text>{{ __('Form submissions') }}</flux:text>
