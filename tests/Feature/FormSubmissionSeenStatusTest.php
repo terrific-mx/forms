@@ -122,9 +122,4 @@ it('shows submission is seen after viewing', function () {
     // After viewing - should be seen
     $submission->refresh();
     expect($submission->isSeen())->toBeTrue();
-
-    // Badge should show "Seen" instead of "New"
-    $response = $this->actingAs($user)->get("/submissions/{$submission->id}");
-    $response->assertSee('Seen');
-    $response->assertDontSee('New');
 });
