@@ -13,5 +13,5 @@ it('displays the thank you page after form submission', function () {
     $response = get("/f/{$form->ulid}/thank-you");
 
     $response->assertStatus(200);
-    $response->assertSee('Thank you for submitting the form!');
+    $response->assertSee('Thanks for your submission!');
 });
