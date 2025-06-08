@@ -103,7 +103,6 @@ new class extends Component {
 
                     <x-description-list>
                         @foreach ($submission->data as $key => $value)
-                            @continue(in_array($key, ['_token', '_method']))
                             <x-description-list.term>
                                 <flux:text>{{ str_replace('_', ' ', Str::title($key)) }}</flux:text>
                             </x-description-list.term>
