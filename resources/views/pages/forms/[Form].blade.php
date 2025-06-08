@@ -80,10 +80,10 @@ new class extends Component {
                                     <flux:tooltip toggleable>
                                         <flux:button icon="information-circle" size="sm" variant="ghost" />
                                         <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                                            <p>IP Address: {{ $submission->ip_address }}</p>
-                                            <p>User Agent: {{ $submission->user_agent ?? 'N/A' }}</p>
+                                            <p>{{ __('IP Address: ') }}{{ $submission->ip_address }}</p>
+                                            <p>{{ __('User Agent: ') }}{{ $submission->user_agent ?? 'N/A' }}</p>
                                             @if ($submission->referrer)
-                                                <p>Referrer: <a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a></p>
+                                                <p>{{ __('Referrer: ') }}<a href="{{ $submission->referrer }}" target="_blank" rel="noopener noreferrer" class="underline">{{ $submission->referrer }}</a></p>
                                             @endif
                                         </flux:tooltip.content>
                                     </flux:tooltip>
