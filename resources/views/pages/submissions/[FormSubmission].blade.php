@@ -21,24 +21,25 @@ new class extends Component {
     @volt('pages.submissions.show')
         <div class="mx-auto max-w-4xl">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-4">
-                    <flux:button
-                        icon="arrow-left"
-                        variant="ghost"
+            <div class="max-lg:hidden">
+                <flux:text>
+                    <flux:link
+                        variant="subtle"
                         wire:navigate
                         href="/forms/{{ $submission->form->id }}"
+                        class="inline-flex items-center gap-2"
                     >
+                        <flux:icon name="arrow-left" variant="micro" />
                         {{ $submission->form->name }}
-                    </flux:button>
-                </div>
+                    </flux:link>
+                </flux:text>
             </div>
 
             <!-- Submission Header -->
-            <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center justify-between mb-2.5 mt-4 lg:mt-8">
                 <div class="flex items-center gap-4">
                     <flux:heading level="1" size="lg">Submission #{{ $submission->id }}</flux:heading>
-                    <flux:badge color="green" size="sm">{{ __('Received') }}</flux:badge>
+                    <flux:badge color="green" size="sm">{{ __('New') }}</flux:badge>
                 </div>
                 <div class="flex items-center gap-2">
                     <flux:button variant="outline" size="sm">
