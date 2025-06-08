@@ -27,6 +27,7 @@ class FormSubmissionFactory extends Factory
             'ip_address' => $this->faker->ipv4(),
             'user_agent' => $this->faker->userAgent(),
             'referrer' => $this->faker->url(),
+            'seen_at' => null, // Default to new submissions
         ];
     }
 }

@@ -75,9 +75,14 @@ new class extends Component {
                                         :src="$submission->avatar_url"
                                     />
                                     <div class="min-w-0 flex-1">
-                                        <flux:heading size="sm" class="truncate">
-                                            {{ $submission->name ?: __('Anonymous') }}
-                                        </flux:heading>
+                                        <div class="flex items-center gap-2">
+                                            <flux:heading size="sm" class="truncate">
+                                                {{ $submission->name ?: __('Anonymous') }}
+                                            </flux:heading>
+                                            @if ($submission->isNew())
+                                                <flux:badge color="green" size="sm">{{ __('New') }}</flux:badge>
+                                            @endif
+                                        </div>
                                         @if ($submission->email)
                                             <flux:text size="sm" class="truncate">
                                                 {{ $submission->email }}

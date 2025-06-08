@@ -15,7 +15,7 @@ class FormFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->words(2, true),
+            'name' => 'Test Form',
             'user_id' => User::factory(),
             'ulid' => (string) str()->ulid(),
         ];
