@@ -39,7 +39,8 @@ class DatabaseSeeder extends Seeder
 
         // Helper to create many submissions for a form
         $createSubmissions = function ($form, $submissions) {
-            foreach ($submissions as $submission) {
+            $baseTime = now()->subDays(count($submissions));
+            foreach ($submissions as $i => $submission) {
                 FormSubmission::factory()->create([
                     'form_id' => $form->id,
                     'data' => [
@@ -50,6 +51,7 @@ class DatabaseSeeder extends Seeder
                     'ip_address' => $submission['ip_address'],
                     'user_agent' => $submission['user_agent'],
                     'referrer' => $submission['referrer'],
+                    'created_at' => $baseTime->copy()->addDays($i),
                 ]);
             }
         };
