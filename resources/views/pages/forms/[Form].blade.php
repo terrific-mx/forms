@@ -78,7 +78,7 @@ new class extends Component {
             <div class="mt-4 lg:mt-8">
                 <div class="flex items-center gap-4">
                     @if($form->logo_url)
-                        <img src="{{ $form->logo_url }}" alt="{{ $form->name }} logo" class="w-16 h-16 object-contain rounded border">
+                        <flux:avatar :src="$form->logo_url" size="lg" />
                     @endif
                     <div>
                         <div class="flex items-center gap-4">
