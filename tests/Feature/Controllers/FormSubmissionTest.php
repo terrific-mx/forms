@@ -61,3 +61,42 @@ it('sends notification to all emails in forward_to', function () {
 
     Notification::assertSentOnDemandTimes(\App\Notifications\FormSubmissionReceived::class, 2);
 });
+
+it('redirects to custom URL when redirect_url is set', function () {
+    $form = Form::factory()->create([
+        'redirect_url' => 'https://example.com/custom-thank-you'
+    ]);
+    $data = [
+        'field1' => 'value1',
+        'field2' => 'value2',
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+    $response->assertRedirect('https://example.com/custom-thank-you');
+});
+
+it('redirects to default thank you page when redirect_url is empty', function () {
+    $form = Form::factory()->create([
+        'redirect_url' => ''
+    ]);
+    $data = [
+        'field1' => 'value1',
+        'field2' => 'value2',
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+});
+
+it('redirects to default thank you page when redirect_url is null', function () {
+    $form = Form::factory()->create([
+        'redirect_url' => null
+    ]);
+    $data = [
+        'field1' => 'value1',
+        'field2' => 'value2',
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+});
