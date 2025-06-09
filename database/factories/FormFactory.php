@@ -20,6 +20,7 @@ class FormFactory extends Factory
             'ulid' => (string) str()->ulid(),
             'forward_to' => null,
             'redirect_url' => null,
+            'logo_path' => null,
         ];
     }
 }

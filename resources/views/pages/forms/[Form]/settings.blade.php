@@ -2,19 +2,24 @@
 
 use App\Models\Form;
 use Flux\Flux;
+use Illuminate\Support\Facades\Storage;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 
 use function Laravel\Folio\middleware;
 
 middleware(['auth', ValidateSessionWithWorkOS::class]);
 
 new class extends Component {
+    use WithFileUploads;
+
     public Form $form;
     public string $name = '';
     public string $forward_to = '';
     public string $redirect_url = '';
     public array $forward_to_emails = [];
+    public $logo;
 
     public function mount()
     {
@@ -32,15 +37,40 @@ new class extends Component {
             'forward_to' => 'nullable|string',
             'redirect_url' => 'nullable|url',
             'forward_to_emails.*' => 'sometimes|email',
+            'logo' => 'nullable|image|max:2048', // Max 2MB
         ]);
 
-        $this->form->update([
+        $updateData = [
             'name' => $this->name,
             'forward_to' => implode("\n", $this->forward_to_emails),
             'redirect_url' => $this->redirect_url,
-        ]);
+        ];
+
+        // Handle logo upload
+        if ($this->logo) {
+            // Delete old logo if exists
+            if ($this->form->logo_path && Storage::disk('public')->exists($this->form->logo_path)) {
+                Storage::disk('public')->delete($this->form->logo_path);
+            }
+            
+            // Store new logo
+            $logoPath = $this->logo->store('form-logos', 'public');
+            $updateData['logo_path'] = $logoPath;
+        }
+
+        $this->form->update($updateData);
 
         Flux::toast('Form settings updated successfully.');
+    }
+
+    public function removeLogo()
+    {
+        if ($this->form->logo_path && Storage::disk('public')->exists($this->form->logo_path)) {
+            Storage::disk('public')->delete($this->form->logo_path);
+        }
+        
+        $this->form->update(['logo_path' => null]);
+        Flux::toast('Logo removed successfully.');
     }
 }; ?>
 
@@ -54,6 +84,54 @@ new class extends Component {
                 </div>
 
                 <flux:input wire:model="name" name="name" :label="__('Form Name')" required />
+
+                <!-- Logo Upload Section -->
+                <div class="space-y-4">
+                    <div>
+                        <flux:label>{{ __('Custom Logo') }}</flux:label>
+                        <flux:badge variant="warning" size="sm">{{ __('Optional') }}</flux:badge>
+                    </div>
+                    
+                    @if($form->logo_url)
+                        <div class="flex items-start gap-4 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+                            <img src="{{ $form->logo_url }}" alt="Current logo" class="w-16 h-16 object-contain rounded border">
+                            <div class="flex-1 min-w-0">
+                                <flux:text size="sm" variant="strong">{{ __('Current Logo') }}</flux:text>
+                                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400 block">
+                                    {{ __('Upload a new logo to replace this one.') }}
+                                </flux:text>
+                                <flux:button 
+                                    wire:click="removeLogo" 
+                                    variant="danger" 
+                                    size="sm" 
+                                    class="mt-2"
+                                    wire:confirm="{{ __('Are you sure you want to remove the current logo?') }}"
+                                >
+                                    {{ __('Remove Logo') }}
+                                </flux:button>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div>
+                        <flux:input 
+                            type="file" 
+                            wire:model="logo" 
+                            name="logo" 
+                            accept="image/*"
+                            :description:trailing="__('Upload a logo image (JPG, PNG, SVG). Maximum size: 2MB.')"
+                        />
+                        <flux:error name="logo" />
+                        
+                        @if($logo)
+                            <div class="mt-2">
+                                <flux:text size="sm" class="text-green-600 dark:text-green-400">
+                                    {{ __('Ready to upload: ') }}{{ $logo->getClientOriginalName() }}
+                                </flux:text>
+                            </div>
+                        @endif
+                    </div>
+                </div>
 
                 <div>
                     <flux:textarea

@@ -45,11 +45,16 @@ new class extends Component {
                     @foreach ($forms as $form)
                         <flux:table.row>
                             <flux:table.cell variant="strong">
-                                <div class="flex items-center gap-2">
-                                    <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
-                                    @if ($form->new_submissions_count > 0)
-                                        <flux:badge color="green" size="sm">{{ $form->new_submissions_count }} {{ __('New') }}</flux:badge>
+                                <div class="flex items-center gap-3">
+                                    @if($form->logo_url)
+                                        <img src="{{ $form->logo_url }}" alt="{{ $form->name }} logo" class="w-8 h-8 object-contain rounded border">
                                     @endif
+                                    <div class="flex items-center gap-2">
+                                        <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
+                                        @if ($form->new_submissions_count > 0)
+                                            <flux:badge color="green" size="sm">{{ $form->new_submissions_count }} {{ __('New') }}</flux:badge>
+                                        @endif
+                                    </div>
                                 </div>
                             </flux:table.cell>
                             <flux:table.cell>
