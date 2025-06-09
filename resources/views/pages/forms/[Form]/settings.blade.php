@@ -18,6 +18,7 @@ new class extends Component {
     public string $name = '';
     public string $forward_to = '';
     public string $redirect_url = '';
+    public string $allowed_domains = '';
     public array $forward_to_emails = [];
     public $logo;
 
@@ -26,6 +27,7 @@ new class extends Component {
         $this->name = $this->form->name;
         $this->forward_to = $this->form->forward_to ?? '';
         $this->redirect_url = $this->form->redirect_url ?? '';
+        $this->allowed_domains = $this->form->allowed_domains ?? '';
     }
 
     public function save()
@@ -36,6 +38,7 @@ new class extends Component {
             'name' => 'required|string|max:255',
             'forward_to' => 'nullable|string',
             'redirect_url' => 'nullable|url',
+            'allowed_domains' => 'nullable|string',
             'forward_to_emails.*' => 'sometimes|email',
             'logo' => 'nullable|image|max:2048',
         ]);
@@ -44,6 +47,7 @@ new class extends Component {
             'name' => $this->name,
             'forward_to' => implode("\n", $this->forward_to_emails),
             'redirect_url' => $this->redirect_url,
+            'allowed_domains' => $this->allowed_domains,
         ];
 
         if ($this->logo) {
@@ -155,6 +159,15 @@ new class extends Component {
                     :badge="__('Optional')"
                     :description:trailing="__('URL to redirect users after successful form submission. If left empty, users will see the default thank you page.')"
                     placeholder="https://example.com/thank-you"
+                />
+
+                <flux:input
+                    wire:model="allowed_domains"
+                    name="allowed_domains"
+                    :label="__('Allowed Domains')"
+                    :badge="__('Optional')"
+                    :description:trailing="__('Comma-separated list of domains that can submit to this form (e.g., example.com, mysite.org). If left empty, submissions from any domain will be accepted.')"
+                    placeholder="example.com, mysite.org"
                 />
 
                 <div class="flex max-sm:flex-col-reverse items-center max:sm:flex-col justify-end gap-3 max-sm:*:w-full">

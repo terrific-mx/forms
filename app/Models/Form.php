@@ -38,6 +38,13 @@ class Form extends Model
                 : array_filter(array_map('trim', preg_split('/\r?\n/', $attributes['forward_to']))));
     }
 
+    protected function allowedDomainsList(): Attribute
+    {
+        return Attribute::get(fn ($value, $attributes) => empty($attributes['allowed_domains'] ?? null)
+                ? []
+                : array_filter(array_map('trim', explode(',', $attributes['allowed_domains']))));
+    }
+
     protected function formattedEmbedded(): Attribute
     {
         return Attribute::get(fn ($value, $attributes) => '<form action="'.url('/f/'.$attributes['ulid']).'" method="POST">'
@@ -53,5 +60,33 @@ class Form extends Model
 
             return null;
         });
+    }
+
+    public function isReferrerAllowed(?string $referrer): bool
+    {
+        // If no allowed domains are configured, allow all referrers
+        if (empty($this->allowed_domains_list)) {
+            return true;
+        }
+
+        // If no referrer is provided, allow the submission
+        if (!$referrer) {
+            return true;
+        }
+
+        $referrerHost = parse_url($referrer, PHP_URL_HOST);
+
+        if (!$referrerHost) {
+            return false;
+        }
+
+        foreach ($this->allowed_domains_list as $allowedDomain) {
+            // Check exact match or subdomain match
+            if ($referrerHost === $allowedDomain || str_ends_with($referrerHost, '.' . $allowedDomain)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

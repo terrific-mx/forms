@@ -222,6 +222,57 @@ it('validates redirect URL format', function () {
         ->assertHasErrors(['redirect_url' => 'url']);
 });
 
+it('can update form with allowed domains', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'allowed_domains' => null,
+    ]);
+
+    Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+        ->set('name', 'Test Form')
+        ->set('allowed_domains', 'example.com, mysite.org')
+        ->call('save');
+
+    assertDatabaseHas('forms', [
+        'id' => $form->id,
+        'allowed_domains' => 'example.com, mysite.org',
+    ]);
+});
+
+it('can clear allowed domains', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'allowed_domains' => 'example.com',
+    ]);
+
+    Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+        ->set('name', 'Test Form')
+        ->set('allowed_domains', '')
+        ->call('save');
+
+    assertDatabaseHas('forms', [
+        'id' => $form->id,
+        'allowed_domains' => '',
+    ]);
+});
+
+it('initializes allowed_domains field correctly', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'allowed_domains' => 'example.com, mysite.org',
+    ]);
+
+    $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
+
+    expect($component->get('allowed_domains'))->toBe('example.com, mysite.org');
+});
+
 it('requires authentication to access form settings', function () {
     $form = Form::factory()->create();
 

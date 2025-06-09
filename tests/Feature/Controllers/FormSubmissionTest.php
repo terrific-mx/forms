@@ -100,3 +100,120 @@ it('redirects to default thank you page when redirect_url is null', function () 
     $response = $this->post("/f/{$form->ulid}", $data);
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
 });
+
+it('allows submissions when no allowed domains are configured', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => null,
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_REFERER' => 'https://any-domain.com/page',
+    ]);
+    
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => 'https://any-domain.com/page',
+    ]);
+});
+
+it('allows submissions when allowed domains are empty', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => '',
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_REFERER' => 'https://any-domain.com/page',
+    ]);
+    
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => 'https://any-domain.com/page',
+    ]);
+});
+
+it('allows submissions from allowed domains', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => 'example.com,mysite.org',
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_REFERER' => 'https://example.com/contact',
+    ]);
+    
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => 'https://example.com/contact',
+    ]);
+});
+
+it('allows submissions from allowed subdomains', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => 'example.com',
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_REFERER' => 'https://blog.example.com/post',
+    ]);
+    
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => 'https://blog.example.com/post',
+    ]);
+});
+
+it('rejects submissions from non-allowed domains', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => 'example.com,mysite.org',
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_REFERER' => 'https://malicious.com/form',
+    ]);
+    
+    $response->assertStatus(403);
+    $this->assertDatabaseMissing('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => 'https://malicious.com/form',
+    ]);
+});
+
+it('allows submissions when no referer header is present', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => 'example.com',
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+    
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => null,
+    ]);
+});
+
+it('handles allowed domains with whitespace correctly', function () {
+    $form = Form::factory()->create([
+        'allowed_domains' => ' example.com , mysite.org , ',
+    ]);
+    $data = ['field1' => 'value1'];
+
+    $response = $this->post("/f/{$form->ulid}", $data, [
+        'HTTP_REFERER' => 'https://mysite.org/contact',
+    ]);
+    
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+        'referrer' => 'https://mysite.org/contact',
+    ]);
+});

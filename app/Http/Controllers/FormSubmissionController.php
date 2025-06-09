@@ -13,6 +13,12 @@ class FormSubmissionController extends Controller
     {
         $form = Form::where('ulid', $ulid)->firstOrFail();
 
+        // Check allowed domains if configured
+        $referrer = $request->headers->get('referer');
+        if (!$form->isReferrerAllowed($referrer)) {
+            abort(403, 'Submission not allowed from this domain');
+        }
+
         $data = $request->all();
 
         $submission = $form->submissions()->create([

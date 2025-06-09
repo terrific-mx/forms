@@ -21,6 +21,7 @@ class FormFactory extends Factory
             'forward_to' => null,
             'redirect_url' => null,
             'logo_path' => null,
+            'allowed_domains' => null,
         ];
     }
 }
