@@ -46,7 +46,7 @@ it('returns 404 for non-existent form', function () {
 it('sends notification to all emails in forward_to', function () {
     Notification::fake();
     $form = Form::factory()->create([
-        'forward_to' => "one@example.com\ntwo@example.com"
+        'forward_to' => "one@example.com\ntwo@example.com",
     ]);
     $data = [
         'field1' => 'value1',
@@ -64,7 +64,7 @@ it('sends notification to all emails in forward_to', function () {
 
 it('redirects to custom URL when redirect_url is set', function () {
     $form = Form::factory()->create([
-        'redirect_url' => 'https://example.com/custom-thank-you'
+        'redirect_url' => 'https://example.com/custom-thank-you',
     ]);
     $data = [
         'field1' => 'value1',
@@ -77,7 +77,7 @@ it('redirects to custom URL when redirect_url is set', function () {
 
 it('redirects to default thank you page when redirect_url is empty', function () {
     $form = Form::factory()->create([
-        'redirect_url' => ''
+        'redirect_url' => '',
     ]);
     $data = [
         'field1' => 'value1',
@@ -90,7 +90,7 @@ it('redirects to default thank you page when redirect_url is empty', function ()
 
 it('redirects to default thank you page when redirect_url is null', function () {
     $form = Form::factory()->create([
-        'redirect_url' => null
+        'redirect_url' => null,
     ]);
     $data = [
         'field1' => 'value1',
