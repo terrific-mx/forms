@@ -101,9 +101,9 @@ it('redirects to default thank you page when redirect_url is null', function () 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
 });
 
-it('allows submissions when no allowed domains are configured', function () {
+it('allows submissions when no allowed domains are configured', function ($allowedDomains) {
     $form = Form::factory()->create([
-        'allowed_domains' => null,
+        'allowed_domains' => $allowedDomains,
     ]);
     $data = ['field1' => 'value1'];
 
@@ -116,24 +116,7 @@ it('allows submissions when no allowed domains are configured', function () {
         'form_id' => $form->id,
         'referrer' => 'https://any-domain.com/page',
     ]);
-});
-
-it('allows submissions when allowed domains are empty', function () {
-    $form = Form::factory()->create([
-        'allowed_domains' => '',
-    ]);
-    $data = ['field1' => 'value1'];
-
-    $response = $this->post("/f/{$form->ulid}", $data, [
-        'HTTP_REFERER' => 'https://any-domain.com/page',
-    ]);
-    
-    $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
-        'form_id' => $form->id,
-        'referrer' => 'https://any-domain.com/page',
-    ]);
-});
+})->with([null, '']);
 
 it('allows submissions from allowed domains', function () {
     $form = Form::factory()->create([
