@@ -48,8 +48,9 @@ class Form extends Model
     {
         return Attribute::get(function () {
             if ($this->logo_path && Storage::disk('public')->exists($this->logo_path)) {
-                return asset('storage/' . $this->logo_path);
+                return asset('storage/'.$this->logo_path);
             }
+
             return null;
         });
     }
