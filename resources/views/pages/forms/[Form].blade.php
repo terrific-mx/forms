@@ -80,7 +80,7 @@ new class extends Component {
                 <!-- New Submissions Table -->
                 <div class="mt-14">
                     <div class="flex items-center gap-2">
-                        <flux:heading level="2" size="lg">{{ __('New Submissions') }}</flux:heading>
+                        <flux:heading level="2">{{ __('New Submissions') }}</flux:heading>
                         <flux:badge color="green" size="sm" inset="top bottom">{{ $this->newSubmissions->total() }}</flux:badge>
                     </div>
 
