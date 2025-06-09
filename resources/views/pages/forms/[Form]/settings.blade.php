@@ -52,7 +52,7 @@ new class extends Component {
             if ($this->form->logo_path && Storage::disk('public')->exists($this->form->logo_path)) {
                 Storage::disk('public')->delete($this->form->logo_path);
             }
-            
+
             // Store new logo
             $logoPath = $this->logo->store('form-logos', 'public');
             $updateData['logo_path'] = $logoPath;
@@ -68,7 +68,7 @@ new class extends Component {
         if ($this->form->logo_path && Storage::disk('public')->exists($this->form->logo_path)) {
             Storage::disk('public')->delete($this->form->logo_path);
         }
-        
+
         $this->form->update(['logo_path' => null]);
         Flux::toast('Logo removed successfully.');
     }
@@ -86,24 +86,23 @@ new class extends Component {
                 <flux:input wire:model="name" name="name" :label="__('Form Name')" required />
 
                 <!-- Logo Upload Section -->
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div>
                         <flux:label>{{ __('Custom Logo') }}</flux:label>
                         <flux:badge variant="warning" size="sm">{{ __('Optional') }}</flux:badge>
                     </div>
-                    
+
                     @if($form->logo_url)
-                        <div class="flex items-start gap-4 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg">
-                            <img src="{{ $form->logo_url }}" alt="Current logo" class="w-16 h-16 object-contain rounded border">
+                        <div class="flex items-start gap-4">
+                            <img src="{{ $form->logo_url }}" alt="Current logo" class="size-20 object-contain rounded-lg border">
                             <div class="flex-1 min-w-0">
-                                <flux:text size="sm" variant="strong">{{ __('Current Logo') }}</flux:text>
-                                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400 block">
+                                <flux:text variant="strong">{{ __('Current Logo') }}</flux:text>
+                                <flux:text size="sm">
                                     {{ __('Upload a new logo to replace this one.') }}
                                 </flux:text>
-                                <flux:button 
-                                    wire:click="removeLogo" 
-                                    variant="danger" 
-                                    size="sm" 
+                                <flux:button
+                                    wire:click="removeLogo"
+                                    size="sm"
                                     class="mt-2"
                                     wire:confirm="{{ __('Are you sure you want to remove the current logo?') }}"
                                 >
@@ -114,22 +113,23 @@ new class extends Component {
                     @endif
 
                     <div>
-                        <flux:input 
-                            type="file" 
-                            wire:model="logo" 
-                            name="logo" 
+                        <flux:input
+                            type="file"
+                            wire:model="logo"
+                            name="logo"
                             accept="image/*"
-                            :description:trailing="__('Upload a logo image (JPG, PNG, SVG). Maximum size: 2MB.')"
+                            :description:trailing="__('Upload a logo image (JPG, PNG). Maximum size: 2MB.')"
                         />
-                        <flux:error name="logo" />
-                        
+
                         @if($logo)
                             <div class="mt-2">
-                                <flux:text size="sm" class="text-green-600 dark:text-green-400">
+                                <flux:text color="green">
                                     {{ __('Ready to upload: ') }}{{ $logo->getClientOriginalName() }}
                                 </flux:text>
                             </div>
                         @endif
+
+                        <flux:error name="logo" />
                     </div>
                 </div>
 
