@@ -5,10 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Form extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'forward_to',
+        'redirect_url',
+        'logo_path',
+        'ulid',
+    ];
 
     public function user()
     {
@@ -31,5 +40,15 @@ class Form extends Model
     {
         return Attribute::get(fn ($value, $attributes) => '<form action="'.url('/f/'.$attributes['ulid']).'" method="POST">'
         );
+    }
+
+    protected function logoUrl(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->logo_path && Storage::disk('public')->exists($this->logo_path)) {
+                return asset('storage/' . $this->logo_path);
+            }
+            return null;
+        });
     }
 }
