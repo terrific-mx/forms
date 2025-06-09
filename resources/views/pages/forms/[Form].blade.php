@@ -70,9 +70,9 @@ new class extends Component {
                 </div>
 
                 <div class="flex gap-3">
-                    {{-- <flux:button variant="ghost" size="sm" icon="cog-6-tooth">
+                    <flux:button href="/forms/{{ $form->id }}/settings" variant="ghost" size="sm" icon="cog-6-tooth" wire:navigate>
                         {{ __('Settings') }}
-                    </flux:button> --}}
+                    </flux:button>
                 </div>
             </div>
 
