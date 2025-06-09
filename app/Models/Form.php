@@ -75,13 +75,13 @@ class Form extends Model
         }
 
         $referrerHost = parse_url($referrer, PHP_URL_HOST);
-        
-        if (!$referrerHost) {
+
+        if (! $referrerHost) {
             return false;
         }
 
         foreach ($this->allowed_domains_list as $allowedDomain) {
-            if ($referrerHost === $allowedDomain || str_ends_with($referrerHost, '.' . $allowedDomain)) {
+            if ($referrerHost === $allowedDomain || str_ends_with($referrerHost, '.'.$allowedDomain)) {
                 return true;
             }
         }
