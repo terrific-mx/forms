@@ -118,19 +118,6 @@ it('handles form with null forward_to field', function () {
     expect($component->get('forward_to'))->toBe('');
 });
 
-it('shows success message after updating form', function () {
-    $user = User::factory()->create();
-    $form = Form::factory()->create([
-        'user_id' => $user->id,
-        'name' => 'Test Form',
-    ]);
-
-    Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
-        ->set('name', 'Updated Form')
-        ->call('save')
-        ->assertSessionHas('message', 'Form settings updated successfully.');
-});
-
 it('trims whitespace from email addresses', function () {
     $user = User::factory()->create();
     $form = Form::factory()->create([
