@@ -35,7 +35,7 @@ it('displays custom logo on thank you page when form has logo', function () {
     $response->assertStatus(200);
     $response->assertSee('Thanks for your submission!');
     $response->assertSee('Test Form with Logo');
-    $response->assertSee(asset('storage/' . $logoPath));
+    $response->assertSee(asset('storage/'.$logoPath));
 });
 
 it('displays default app brand on thank you page when form has no logo', function () {
