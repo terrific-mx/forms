@@ -5,7 +5,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 
+use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\get;
 
 uses(RefreshDatabase::class);
 
@@ -152,4 +154,11 @@ it('filters out empty lines from forward_to emails', function () {
         'id' => $form->id,
         'forward_to' => "one@example.com\ntwo@example.com",
     ]);
+});
+
+it('requires authentication to access form settings', function () {
+    $form = Form::factory()->create();
+
+    get("/forms/{$form->id}/settings")
+        ->assertRedirect('/login');
 });

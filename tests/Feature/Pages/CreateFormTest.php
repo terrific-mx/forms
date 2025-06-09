@@ -5,6 +5,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\get;
 
 uses(RefreshDatabase::class);
 
@@ -67,4 +68,9 @@ it('cannot create a form with invalid emails in forward_to', function () {
         ->set('forward_to', "one@example.com\ninvalid-email\ntwo@example.com")
         ->call('save')
         ->assertHasErrors(['forward_to_emails.1' => 'email']);
+});
+
+it('requires authentication to access create form', function () {
+    get("/forms/create")
+        ->assertRedirect('/login');
 });
