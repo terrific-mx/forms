@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FormSubmissionController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/f/{form:ulid}', [FormSubmissionController::class, 'store']);
 

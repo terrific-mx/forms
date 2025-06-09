@@ -23,8 +23,8 @@ class FormSubmissionController extends Controller
         ]);
 
         collect($form->forward_to_emails)
-            ->each(fn($email) => Notification::route('mail', $email)
-            ->notify(new FormSubmissionReceived($form, $submission)));
+            ->each(fn ($email) => Notification::route('mail', $email)
+                ->notify(new FormSubmissionReceived($form, $submission)));
 
         return redirect($form->redirect_url ?: "/f/{$form->ulid}/thank-you");
     }

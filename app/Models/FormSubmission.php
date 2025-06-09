@@ -31,8 +31,9 @@ class FormSubmission extends Model
             // Example: use email from data if available, fallback to a default avatar
             $email = $this->data['email'] ?? null;
             if ($email) {
-                return 'https://unavatar.io/' . urlencode($email);
+                return 'https://unavatar.io/'.urlencode($email);
             }
+
             return 'https://unavatar.io/'.config('app.url');
         });
     }
@@ -55,10 +56,12 @@ class FormSubmission extends Model
             if ($filtered->isEmpty()) {
                 return '';
             }
+
             return $filtered->map(function ($value, $key) {
                 $titleKey = ucwords(str_replace('_', ' ', $key));
                 $stringValue = is_array($value) ? json_encode($value) : (string) $value;
-                $excerpt = mb_strlen($stringValue) > 80 ? mb_substr($stringValue, 0, 77) . '...' : $stringValue;
+                $excerpt = mb_strlen($stringValue) > 80 ? mb_substr($stringValue, 0, 77).'...' : $stringValue;
+
                 return "$titleKey: $excerpt";
             })->implode(' · ');
         });

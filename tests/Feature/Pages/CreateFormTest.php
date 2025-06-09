@@ -71,6 +71,6 @@ it('cannot create a form with invalid emails in forward_to', function () {
 });
 
 it('requires authentication to access create form', function () {
-    get("/forms/create")
+    get('/forms/create')
         ->assertRedirect('/login');
 });

@@ -5,7 +5,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\get;
 
@@ -16,7 +15,7 @@ it('can update a form', function () {
     $form = Form::factory()->create([
         'user_id' => $user->id,
         'name' => 'Original Form',
-        'forward_to' => "old@example.com",
+        'forward_to' => 'old@example.com',
     ]);
 
     Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
@@ -51,7 +50,7 @@ it('can update form with empty forward_to field', function () {
     $form = Form::factory()->create([
         'user_id' => $user->id,
         'name' => 'Test Form',
-        'forward_to' => "old@example.com",
+        'forward_to' => 'old@example.com',
     ]);
 
     Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
