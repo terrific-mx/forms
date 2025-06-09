@@ -60,19 +60,59 @@ new class extends Component {
     @volt('pages.forms.show')
         <div class="mx-auto max-w-7xl">
             <!-- Header -->
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
-                <div>
-                    <flux:heading level="1" size="xl">{{ $form->name }}</flux:heading>
-                    <flux:text>
-                        {{ $this->submissions->total() }} {{ Str::plural('submission', $this->submissions->total()) }}
-                        ({{ $this->newSubmissions->total() }} new, {{ $this->seenSubmissions->total() }} seen)
-                    </flux:text>
+            <div class="max-lg:hidden">
+                <flux:text>
+                    <flux:link
+                        variant="subtle"
+                        wire:navigate
+                        href="/dashboard"
+                        class="inline-flex items-center gap-2"
+                    >
+                        <flux:icon name="arrow-left" variant="micro" />
+                        {{ __('Dashboard') }}
+                    </flux:link>
+                </flux:text>
+            </div>
+
+            <!-- Form Header -->
+            <div class="mt-4 lg:mt-8">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-4">
+                            <flux:heading level="1" size="xl">{{ $form->name }}</flux:heading>
+                        </div>
+                        <flux:text size="sm">
+                            {{ $this->submissions->total() }} {{ Str::plural('submission', $this->submissions->total()) }}
+                            ({{ $this->newSubmissions->total() }} new, {{ $this->seenSubmissions->total() }} seen)
+                        </flux:text>
+                    </div>
                 </div>
 
-                <div class="flex gap-3">
-                    <flux:button href="/forms/{{ $form->id }}/settings" variant="ghost" size="sm" icon="cog-6-tooth" wire:navigate>
-                        {{ __('Settings') }}
-                    </flux:button>
+                <div class="isolate mt-6 flex flex-wrap justify-between gap-x-6 gap-y-4">
+                    <div class="flex flex-wrap gap-x-8 gap-y-4">
+                        <flux:text class="flex items-center gap-2">
+                            <flux:icon name="document-text" variant="micro" />
+                            {{ __('Form ID') }}: {{ $form->id }}
+                        </flux:text>
+
+                        <flux:text class="flex items-center gap-2">
+                            <flux:icon name="calendar" variant="micro" />
+                            {{ __('Created') }} {{ $form->created_at->format('M j, Y') }}
+                        </flux:text>
+
+                        @if($form->forward_to)
+                            <flux:text class="flex items-center gap-2">
+                                <flux:icon name="envelope" variant="micro" />
+                                {{ __('Forwarding enabled') }}
+                            </flux:text>
+                        @endif
+                    </div>
+
+                    <div class="flex gap-3">
+                        <flux:button href="/forms/{{ $form->id }}/settings" variant="ghost" size="sm" icon="cog-6-tooth" wire:navigate>
+                            {{ __('Settings') }}
+                        </flux:button>
+                    </div>
                 </div>
             </div>
 
