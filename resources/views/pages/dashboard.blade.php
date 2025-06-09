@@ -47,7 +47,7 @@ new class extends Component {
                             <flux:table.cell variant="strong">
                                 <div class="flex items-center gap-3">
                                     @if($form->logo_url)
-                                        <img src="{{ $form->logo_url }}" alt="{{ $form->name }} logo" class="w-8 h-8 object-contain rounded border">
+                                        <flux:avatar :src="$form->logo_url" size="xs" />
                                     @endif
                                     <div class="flex items-center gap-2">
                                         <flux:link href="/forms/{{ $form->id }}">{{ $form->name }}</flux:link>
