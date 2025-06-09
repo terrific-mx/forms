@@ -11,13 +11,15 @@ class Form extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'forward_to',
-        'redirect_url',
-        'logo_path',
-        'ulid',
-    ];
+    protected static function booted(): void
+    {
+        static::deleting(function (Form $form) {
+            // Clean up logo file when form is deleted
+            if ($form->logo_path && Storage::disk('public')->exists($form->logo_path)) {
+                Storage::disk('public')->delete($form->logo_path);
+            }
+        });
+    }
 
     public function user()
     {

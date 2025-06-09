@@ -37,7 +37,7 @@ new class extends Component {
             'forward_to' => 'nullable|string',
             'redirect_url' => 'nullable|url',
             'forward_to_emails.*' => 'sometimes|email',
-            'logo' => 'nullable|image|max:2048', // Max 2MB
+            'logo' => 'nullable|image|max:2048',
         ]);
 
         $updateData = [
@@ -46,29 +46,33 @@ new class extends Component {
             'redirect_url' => $this->redirect_url,
         ];
 
-        // Handle logo upload
         if ($this->logo) {
-            // Delete old logo if exists
-            if ($this->form->logo_path && Storage::disk('public')->exists($this->form->logo_path)) {
-                Storage::disk('public')->delete($this->form->logo_path);
-            }
-
-            // Store new logo
-            $logoPath = $this->logo->store('form-logos', 'public');
-            $updateData['logo_path'] = $logoPath;
+            $updateData['logo_path'] = $this->handleLogoUpload();
         }
 
         $this->form->update($updateData);
-
         Flux::toast('Form settings updated successfully.');
     }
 
-    public function removeLogo()
+    private function handleLogoUpload(): string
+    {
+        // Delete old logo if exists
+        $this->deleteCurrentLogo();
+
+        // Store new logo
+        return $this->logo->store('form-logos', 'public');
+    }
+
+    private function deleteCurrentLogo(): void
     {
         if ($this->form->logo_path && Storage::disk('public')->exists($this->form->logo_path)) {
             Storage::disk('public')->delete($this->form->logo_path);
         }
+    }
 
+    public function removeLogo()
+    {
+        $this->deleteCurrentLogo();
         $this->form->update(['logo_path' => null]);
         Flux::toast('Logo removed successfully.');
     }
@@ -120,6 +124,7 @@ new class extends Component {
                             accept="image/*"
                             :description:trailing="__('Upload a logo image (JPG, PNG). Maximum size: 2MB.')"
                         />
+                        <flux:error name="logo" />
 
                         @if($logo)
                             <div class="mt-2">
@@ -128,8 +133,6 @@ new class extends Component {
                                 </flux:text>
                             </div>
                         @endif
-
-                        <flux:error name="logo" />
                     </div>
                 </div>
 
