@@ -69,19 +69,18 @@ class Form extends Model
             return true;
         }
 
-        // If no referrer is provided, allow the submission
-        if (!$referrer) {
+        // If no referrer is provided, allow the submission (direct access)
+        if (empty($referrer)) {
             return true;
         }
 
         $referrerHost = parse_url($referrer, PHP_URL_HOST);
-
+        
         if (!$referrerHost) {
             return false;
         }
 
         foreach ($this->allowed_domains_list as $allowedDomain) {
-            // Check exact match or subdomain match
             if ($referrerHost === $allowedDomain || str_ends_with($referrerHost, '.' . $allowedDomain)) {
                 return true;
             }
