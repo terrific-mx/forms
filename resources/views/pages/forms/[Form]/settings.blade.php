@@ -28,7 +28,7 @@ new class extends Component {
         $this->validate([
             'name' => 'required|string|max:255',
             'forward_to' => 'nullable|string',
-            'forward_to_emails.*' => empty($this->forward_to) ? '' : 'email',
+            'forward_to_emails.*' => 'sometimes|email',
         ]);
 
         $this->form->update([
@@ -60,7 +60,7 @@ new class extends Component {
                         :description:trailing="__('Enter one email address per line.')"
                         rows="4"
                     />
-                    <flux:error name="forward_to_emails" />
+                    <flux:error name="forward_to_emails.*" />
                 </div>
 
                 <div class="flex max-sm:flex-col-reverse items-center max:sm:flex-col justify-end gap-3 max-sm:*:w-full">
