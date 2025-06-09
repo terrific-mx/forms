@@ -26,14 +26,17 @@ class DatabaseSeeder extends Seeder
             Form::factory()->create([
                 'name' => 'Contact Us',
                 'user_id' => $user->id,
+                'redirect_url' => 'https://example.com/contact-thank-you',
             ]),
             Form::factory()->create([
                 'name' => 'Feedback',
                 'user_id' => $user->id,
+                'redirect_url' => null, // Uses default thank you page
             ]),
             Form::factory()->create([
                 'name' => 'Support Request',
                 'user_id' => $user->id,
+                'redirect_url' => 'https://help.example.com/request-submitted',
             ]),
         ];
 

@@ -18,6 +18,8 @@ class FormFactory extends Factory
             'name' => 'Test Form',
             'user_id' => User::factory(),
             'ulid' => (string) str()->ulid(),
+            'forward_to' => null,
+            'redirect_url' => null,
         ];
     }
 }

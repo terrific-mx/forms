@@ -156,6 +156,71 @@ it('filters out empty lines from forward_to emails', function () {
     ]);
 });
 
+it('can update form with redirect URL', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'redirect_url' => null,
+    ]);
+
+    Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+        ->set('name', 'Test Form')
+        ->set('redirect_url', 'https://example.com/custom-thank-you')
+        ->call('save');
+
+    assertDatabaseHas('forms', [
+        'id' => $form->id,
+        'redirect_url' => 'https://example.com/custom-thank-you',
+    ]);
+});
+
+it('initializes redirect URL field with existing data', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'redirect_url' => 'https://example.com/existing-redirect',
+    ]);
+
+    $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
+
+    expect($component->get('redirect_url'))->toBe('https://example.com/existing-redirect');
+});
+
+it('can clear redirect URL field', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'redirect_url' => 'https://example.com/old-redirect',
+    ]);
+
+    Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+        ->set('name', 'Test Form')
+        ->set('redirect_url', '')
+        ->call('save');
+
+    assertDatabaseHas('forms', [
+        'id' => $form->id,
+        'redirect_url' => '',
+    ]);
+});
+
+it('validates redirect URL format', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+    ]);
+
+    Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+        ->set('name', 'Test Form')
+        ->set('redirect_url', 'invalid-url')
+        ->call('save')
+        ->assertHasErrors(['redirect_url' => 'url']);
+});
+
 it('requires authentication to access form settings', function () {
     $form = Form::factory()->create();
 

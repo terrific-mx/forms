@@ -26,6 +26,9 @@ class FormSubmissionController extends Controller
             ->each(fn($email) => Notification::route('mail', $email)
             ->notify(new FormSubmissionReceived($form, $submission)));
 
-        return redirect("/f/{$form->ulid}/thank-you");
+        // Use custom redirect URL if provided, otherwise use default thank you page
+        $redirectUrl = $form->redirect_url ?: "/f/{$form->ulid}/thank-you";
+        
+        return redirect($redirectUrl);
     }
 }
