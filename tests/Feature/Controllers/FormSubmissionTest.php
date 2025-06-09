@@ -110,7 +110,7 @@ it('allows submissions when no allowed domains are configured', function ($allow
     $response = $this->post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://any-domain.com/page',
     ]);
-    
+
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
@@ -127,7 +127,7 @@ it('allows submissions from allowed domains', function () {
     $response = $this->post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://example.com/contact',
     ]);
-    
+
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
@@ -144,7 +144,7 @@ it('allows submissions from allowed subdomains', function () {
     $response = $this->post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://blog.example.com/post',
     ]);
-    
+
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
@@ -161,7 +161,7 @@ it('rejects submissions from non-allowed domains', function () {
     $response = $this->post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://malicious.com/form',
     ]);
-    
+
     $response->assertStatus(403);
     $this->assertDatabaseMissing('form_submissions', [
         'form_id' => $form->id,
@@ -176,7 +176,7 @@ it('allows submissions when no referer header is present', function () {
     $data = ['field1' => 'value1'];
 
     $response = $this->post("/f/{$form->ulid}", $data);
-    
+
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
@@ -193,7 +193,7 @@ it('handles allowed domains with whitespace correctly', function () {
     $response = $this->post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://mysite.org/contact',
     ]);
-    
+
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
