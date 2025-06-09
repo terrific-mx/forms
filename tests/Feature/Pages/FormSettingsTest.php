@@ -231,7 +231,7 @@ it('requires authentication to access form settings', function () {
 
 it('can upload and update form logo', function () {
     Storage::fake('public');
-    
+
     $user = User::factory()->create();
     $form = Form::factory()->create([
         'user_id' => $user->id,
@@ -246,20 +246,20 @@ it('can upload and update form logo', function () {
         ->call('save');
 
     $form->refresh();
-    
+
     expect($form->logo_path)->not->toBeNull();
     expect(Storage::disk('public')->exists($form->logo_path))->toBeTrue();
 });
 
 it('can remove form logo', function () {
     Storage::fake('public');
-    
+
     $user = User::factory()->create();
-    
+
     // Create a form with a logo
     $file = UploadedFile::fake()->image('logo.png', 100, 100);
     $logoPath = $file->store('form-logos', 'public');
-    
+
     $form = Form::factory()->create([
         'user_id' => $user->id,
         'name' => 'Test Form',
@@ -270,7 +270,7 @@ it('can remove form logo', function () {
         ->call('removeLogo');
 
     $form->refresh();
-    
+
     expect($form->logo_path)->toBeNull();
     expect(Storage::disk('public')->exists($logoPath))->toBeFalse();
 });
