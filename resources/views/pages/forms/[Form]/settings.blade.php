@@ -106,6 +106,9 @@ new class extends Component {
 
     public function addBlockedEmail()
     {
+        // Trim the email before validation
+        $this->new_blocked_email = trim($this->new_blocked_email);
+        
         $this->validate([
             'new_blocked_email' => [
                 'required',
@@ -113,8 +116,9 @@ new class extends Component {
                 'max:255',
                 function ($attribute, $value, $fail) {
                     // Check for duplicate (case-insensitive)
+                    $normalizedEmail = strtolower(trim($value));
                     $exists = $this->form->blockedEmails()
-                        ->whereRaw('LOWER(email) = ?', [strtolower(trim($value))])
+                        ->where('email', $normalizedEmail)
                         ->exists();
                     
                     if ($exists) {
@@ -125,7 +129,7 @@ new class extends Component {
         ]);
 
         $this->form->blockedEmails()->create([
-            'email' => trim($this->new_blocked_email),
+            'email' => $this->new_blocked_email, // Model will normalize this
         ]);
 
         $this->reset('new_blocked_email');
