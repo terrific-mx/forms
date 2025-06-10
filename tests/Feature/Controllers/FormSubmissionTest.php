@@ -200,3 +200,92 @@ it('handles allowed domains with whitespace correctly', function () {
         'referrer' => 'https://mysite.org/contact',
     ]);
 });
+
+it('allows submissions when honeypot field is not configured', function () {
+    $form = Form::factory()->create([
+        'honeypot_field' => null,
+    ]);
+    $data = [
+        'field1' => 'value1',
+        'secret_field' => 'bot_value', // This would normally be a honeypot
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+    ]);
+});
+
+it('allows submissions when honeypot field is empty', function () {
+    $form = Form::factory()->create([
+        'honeypot_field' => 'website',
+    ]);
+    $data = [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'website' => '', // Honeypot field is empty (good)
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+    ]);
+});
+
+it('allows submissions when honeypot field is missing', function () {
+    $form = Form::factory()->create([
+        'honeypot_field' => 'website',
+    ]);
+    $data = [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        // No honeypot field included
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+    ]);
+});
+
+it('rejects submissions when honeypot field has a value', function () {
+    $form = Form::factory()->create([
+        'honeypot_field' => 'website',
+    ]);
+    $data = [
+        'name' => 'Bot Name',
+        'email' => 'bot@example.com',
+        'website' => 'http://spam.com', // Honeypot field has value (bad)
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+
+    $response->assertStatus(403);
+    $this->assertDatabaseMissing('form_submissions', [
+        'form_id' => $form->id,
+    ]);
+});
+
+it('trims honeypot field whitespace when checking', function () {
+    $form = Form::factory()->create([
+        'honeypot_field' => 'website',
+    ]);
+    $data = [
+        'name' => 'Bot Name',
+        'email' => 'bot@example.com',
+        'website' => '   ', // Only whitespace should be treated as empty
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
+    $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+    ]);
+});
