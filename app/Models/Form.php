@@ -146,32 +146,21 @@ class Form extends Model
 
     public function isEmailBlocked(array $data): bool
     {
-        // Get all blocked emails for this form (cached for performance)
-        $blockedEmails = $this->blockedEmails()->pluck('email')->toArray();
-        
-        if (empty($blockedEmails)) {
+        $emailFields = ['email', 'user_email', 'contact_email', 'from', 'sender', 'reply_to'];
+
+        $emailValues = collect($emailFields)
+            ->map(fn($field) => $data[$field] ?? null)
+            ->filter(fn($value) => !empty($value))
+            ->map(fn($value) => strtolower(trim($value)))
+            ->values()
+            ->toArray();
+
+        if (empty($emailValues)) {
             return false;
         }
 
-        // Common email field names to check
-        $emailFields = ['email', 'user_email', 'contact_email', 'from', 'sender', 'reply_to'];
-
-        foreach ($emailFields as $field) {
-            $emailValue = $data[$field] ?? null;
-
-            if (empty($emailValue)) {
-                continue;
-            }
-
-            // Normalize email for comparison (lowercase and trim)
-            $normalizedEmail = strtolower(trim($emailValue));
-
-            // Check if this email is in the blocked list
-            if (in_array($normalizedEmail, $blockedEmails)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->blockedEmails()
+            ->whereIn('email', $emailValues)
+            ->exists();
     }
 }
