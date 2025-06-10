@@ -12,6 +12,15 @@ class Form extends Model
 {
     use HasFactory;
 
+    public const EMAIL_FIELDS = [
+        'email',
+        'user_email',
+        'contact_email',
+        'from',
+        'sender',
+        'reply_to'
+    ];
+
     protected $casts = [
         'turnstile_secret_key' => 'encrypted',
     ];
@@ -146,9 +155,7 @@ class Form extends Model
 
     public function isEmailBlocked(array $data): bool
     {
-        $emailFields = ['email', 'user_email', 'contact_email', 'from', 'sender', 'reply_to'];
-
-        $emailValues = collect($emailFields)
+        $emailValues = collect(self::EMAIL_FIELDS)
             ->map(fn($field) => $data[$field] ?? null)
             ->filter(fn($value) => !empty($value))
             ->map(fn($value) => strtolower(trim($value)))
