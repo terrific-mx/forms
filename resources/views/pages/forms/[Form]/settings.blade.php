@@ -281,7 +281,7 @@ new class extends Component {
                         <div class="flex-1">
                             <flux:input
                                 wire:model="new_blocked_email"
-                                wire:keydown.enter="addBlockedEmail"
+                                wire:keydown.enter.prevent="addBlockedEmail"
                                 name="new_blocked_email"
                                 type="email"
                                 placeholder="spam@example.com"
