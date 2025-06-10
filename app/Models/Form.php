@@ -12,6 +12,10 @@ class Form extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'turnstile_secret_key' => 'encrypted',
+    ];
+
     protected static function booted(): void
     {
         static::deleting(function (Form $form) {
