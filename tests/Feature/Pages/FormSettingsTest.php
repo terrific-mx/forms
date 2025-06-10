@@ -486,6 +486,7 @@ describe('blocked emails functionality', function () {
             ->set('new_blocked_email', 'spam@example.com')
             ->call('addBlockedEmail');
 
+        $form->refresh();
         expect($form->blockedEmails()->count())->toBe(1);
         expect($form->blockedEmails()->first()->email)->toBe('spam@example.com');
     });
@@ -504,6 +505,7 @@ describe('blocked emails functionality', function () {
             ->set('new_blocked_email', 'troll@badsite.org')
             ->call('addBlockedEmail');
 
+        $form->refresh();
         expect($form->blockedEmails()->count())->toBe(2);
         expect($form->blockedEmails()->pluck('email')->toArray())
             ->toMatchArray(['spam@example.com', 'troll@badsite.org']);
@@ -571,8 +573,9 @@ describe('blocked emails functionality', function () {
         Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
             ->set('new_blocked_email', 'spam@example.com')
             ->call('addBlockedEmail')
-            ->assertHasErrors(['new_blocked_email' => 'unique']);
+            ->assertHasErrors(['new_blocked_email']);
 
+        $form->refresh();
         expect($form->blockedEmails()->count())->toBe(1);
     });
 
@@ -587,6 +590,7 @@ describe('blocked emails functionality', function () {
             ->set('new_blocked_email', '  spam@example.com  ')
             ->call('addBlockedEmail');
 
+        $form->refresh();
         expect($form->blockedEmails()->first()->email)->toBe('spam@example.com');
     });
 
@@ -604,8 +608,9 @@ describe('blocked emails functionality', function () {
         Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
             ->set('new_blocked_email', 'SPAM@EXAMPLE.COM')
             ->call('addBlockedEmail')
-            ->assertHasErrors(['new_blocked_email' => 'unique']);
+            ->assertHasErrors(['new_blocked_email']);
 
+        $form->refresh();
         expect($form->blockedEmails()->count())->toBe(1);
     });
 

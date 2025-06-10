@@ -33,6 +33,11 @@ class FormSubmissionController extends Controller
             abort(403, 'Turnstile validation failed');
         }
 
+        // Check if email is blocked
+        if ($form->isEmailBlocked($data)) {
+            abort(403, 'Email address is blocked');
+        }
+
         $submission = $form->submissions()->create([
             'data' => $data,
             'ip_address' => $request->ip(),

@@ -36,6 +36,11 @@ class Form extends Model
         return $this->hasMany(FormSubmission::class);
     }
 
+    public function blockedEmails()
+    {
+        return $this->hasMany(BlockedEmail::class);
+    }
+
     protected function forwardToEmails(): Attribute
     {
         return Attribute::get(fn ($value, $attributes) => empty($attributes['forward_to'] ?? null)
@@ -137,5 +142,34 @@ class Form extends Model
             // Log the error if needed, but fail closed for security
             return false;
         }
+    }
+
+    public function isEmailBlocked(array $data): bool
+    {
+        // If no blocked emails are configured, allow all submissions
+        if ($this->blockedEmails()->count() === 0) {
+            return false;
+        }
+
+        // Common email field names to check
+        $emailFields = ['email', 'user_email', 'contact_email', 'from', 'sender', 'reply_to'];
+
+        foreach ($emailFields as $field) {
+            $emailValue = $data[$field] ?? null;
+
+            if (empty($emailValue)) {
+                continue;
+            }
+
+            // Normalize email for comparison (lowercase and trim)
+            $normalizedEmail = strtolower(trim($emailValue));
+
+            // Check if this email is in the blocked list
+            if ($this->blockedEmails()->where('email', $normalizedEmail)->exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
