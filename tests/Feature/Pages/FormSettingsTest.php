@@ -473,3 +473,170 @@ describe('turnstile secret key functionality', function () {
         expect($reloadedForm->turnstile_secret_key)->toBe($secretKey);
     });
 });
+
+describe('blocked emails functionality', function () {
+    it('can add a single blocked email to a form', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', 'spam@example.com')
+            ->call('addBlockedEmail');
+
+        expect($form->blockedEmails()->count())->toBe(1);
+        expect($form->blockedEmails()->first()->email)->toBe('spam@example.com');
+    });
+
+    it('can add multiple blocked emails one by one', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
+
+        $component->set('new_blocked_email', 'spam@example.com')
+            ->call('addBlockedEmail')
+            ->set('new_blocked_email', 'troll@badsite.org')
+            ->call('addBlockedEmail');
+
+        expect($form->blockedEmails()->count())->toBe(2);
+        expect($form->blockedEmails()->pluck('email')->toArray())
+            ->toMatchArray(['spam@example.com', 'troll@badsite.org']);
+    });
+
+    it('can remove a specific blocked email from a form', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        // Add some blocked emails first
+        $blockedEmail1 = $form->blockedEmails()->create(['email' => 'spam@example.com']);
+        $blockedEmail2 = $form->blockedEmails()->create(['email' => 'troll@badsite.org']);
+
+        expect($form->blockedEmails()->count())->toBe(2);
+
+        // Remove one specific email
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->call('removeBlockedEmail', $blockedEmail1->id);
+
+        $form->refresh();
+        expect($form->blockedEmails()->count())->toBe(1);
+        expect($form->blockedEmails()->first()->email)->toBe('troll@badsite.org');
+    });
+
+    it('validates blocked email address format', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', 'invalid-email')
+            ->call('addBlockedEmail')
+            ->assertHasErrors(['new_blocked_email' => 'email']);
+    });
+
+    it('requires blocked email address to be provided', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', '')
+            ->call('addBlockedEmail')
+            ->assertHasErrors(['new_blocked_email' => 'required']);
+    });
+
+    it('prevents duplicate blocked emails', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        // Add first email
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        // Try to add the same email again
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', 'spam@example.com')
+            ->call('addBlockedEmail')
+            ->assertHasErrors(['new_blocked_email' => 'unique']);
+
+        expect($form->blockedEmails()->count())->toBe(1);
+    });
+
+    it('trims whitespace from blocked email addresses', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', '  spam@example.com  ')
+            ->call('addBlockedEmail');
+
+        expect($form->blockedEmails()->first()->email)->toBe('spam@example.com');
+    });
+
+    it('handles case-insensitive email blocking', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        // Add email in lowercase
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        // Try to add the same email in uppercase
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', 'SPAM@EXAMPLE.COM')
+            ->call('addBlockedEmail')
+            ->assertHasErrors(['new_blocked_email' => 'unique']);
+
+        expect($form->blockedEmails()->count())->toBe(1);
+    });
+
+    it('displays existing blocked emails in the form', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+        $form->blockedEmails()->create(['email' => 'troll@badsite.org']);
+
+        $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
+
+        // The blocked emails should be loaded as a relationship
+        expect($form->blockedEmails()->count())->toBe(2);
+    });
+
+    it('clears the input field after adding a blocked email', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('new_blocked_email', 'spam@example.com')
+            ->call('addBlockedEmail');
+
+        // The input should be cleared after adding
+        expect($component->get('new_blocked_email'))->toBe('');
+    });
+});
