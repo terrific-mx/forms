@@ -23,6 +23,7 @@ new class extends Component {
     public string $turnstile_secret_key = '';
     public array $forward_to_emails = [];
     public $logo;
+    public string $new_blocked_email = '';
 
     public function mount()
     {
@@ -48,6 +49,7 @@ new class extends Component {
             'turnstile_secret_key' => 'nullable|string|max:255',
             'forward_to_emails.*' => 'sometimes|email',
             'logo' => 'nullable|image|max:2048',
+            'new_blocked_email' => 'nullable|email|max:255',
         ]);
 
         $updateData = [
@@ -100,6 +102,40 @@ new class extends Component {
     {
         $this->form->update(['turnstile_secret_key' => null]);
         Flux::toast('Turnstile secret key removed successfully.');
+    }
+
+    public function addBlockedEmail()
+    {
+        $this->validate([
+            'new_blocked_email' => [
+                'required',
+                'email',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    // Check for duplicate (case-insensitive)
+                    $exists = $this->form->blockedEmails()
+                        ->whereRaw('LOWER(email) = ?', [strtolower(trim($value))])
+                        ->exists();
+                    
+                    if ($exists) {
+                        $fail('This email address is already blocked.');
+                    }
+                },
+            ],
+        ]);
+
+        $this->form->blockedEmails()->create([
+            'email' => trim($this->new_blocked_email),
+        ]);
+
+        $this->reset('new_blocked_email');
+        Flux::toast('Email address added to blocked list.');
+    }
+
+    public function removeBlockedEmail($blockedEmailId)
+    {
+        $this->form->blockedEmails()->where('id', $blockedEmailId)->delete();
+        Flux::toast('Email address removed from blocked list.');
     }
 }; ?>
 
@@ -229,6 +265,58 @@ new class extends Component {
                         :placeholder="$form->turnstile_secret_key ? __('Enter new key to replace existing') : __('0x4AAAAAAABkMYinukE_NJBz...')"
                         :description:trailing="__('Secret key for Cloudflare Turnstile verification. If provided, all form submissions must include a valid Turnstile token. Leave empty to disable Turnstile protection.')"
                     />
+                </div>
+
+                <!-- Blocked Emails Section -->
+                <div class="space-y-3">
+                    <div>
+                        <flux:label>{{ __('Blocked Email Addresses') }}</flux:label>
+                        <flux:badge variant="warning" size="sm">{{ __('Optional') }}</flux:badge>
+                    </div>
+
+                    <!-- Existing blocked emails list -->
+                    @if($form->blockedEmails->isNotEmpty())
+                        <div class="space-y-2">
+                            <flux:text size="sm">{{ __('Currently blocked email addresses:') }}</flux:text>
+                            @foreach($form->blockedEmails as $blockedEmail)
+                                <flux:card class="p-3">
+                                    <div class="flex items-center justify-between">
+                                        <flux:text class="font-mono text-sm">{{ $blockedEmail->email }}</flux:text>
+                                        <flux:button
+                                            wire:click="removeBlockedEmail({{ $blockedEmail->id }})"
+                                            size="sm"
+                                            variant="ghost"
+                                            color="red"
+                                            wire:confirm="{{ __('Are you sure you want to remove this blocked email address?') }}"
+                                        >
+                                            {{ __('Remove') }}
+                                        </flux:button>
+                                    </div>
+                                </flux:card>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <!-- Add new blocked email -->
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <flux:input
+                                wire:model="new_blocked_email"
+                                name="new_blocked_email"
+                                type="email"
+                                placeholder="spam@example.com"
+                                :description:trailing="__('Enter an email address to block from submitting this form.')"
+                            />
+                            <flux:error name="new_blocked_email" />
+                        </div>
+                        <flux:button
+                            wire:click="addBlockedEmail"
+                            variant="primary"
+                            :disabled="empty($new_blocked_email)"
+                        >
+                            {{ __('Block Email') }}
+                        </flux:button>
+                    </div>
                 </div>
 
                 <div class="flex max-sm:flex-col-reverse items-center max:sm:flex-col justify-end gap-3 max-sm:*:w-full">
