@@ -106,30 +106,12 @@ new class extends Component {
 
     public function addBlockedEmail()
     {
-        // Trim the email before validation
-        $this->new_blocked_email = trim($this->new_blocked_email);
-        
         $this->validate([
-            'new_blocked_email' => [
-                'required',
-                'email',
-                'max:255',
-                function ($attribute, $value, $fail) {
-                    // Check for duplicate (case-insensitive)
-                    $normalizedEmail = strtolower(trim($value));
-                    $exists = $this->form->blockedEmails()
-                        ->where('email', $normalizedEmail)
-                        ->exists();
-                    
-                    if ($exists) {
-                        $fail('This email address is already blocked.');
-                    }
-                },
-            ],
+            'new_blocked_email' => 'required|email|max:255|lowercase|unique:blocked_emails,email,NULL,id,form_id,' . $this->form->id,
         ]);
 
         $this->form->blockedEmails()->create([
-            'email' => $this->new_blocked_email, // Model will normalize this
+            'email' => $this->new_blocked_email,
         ]);
 
         $this->reset('new_blocked_email');
@@ -283,20 +265,13 @@ new class extends Component {
                         <div class="space-y-2">
                             <flux:text size="sm">{{ __('Currently blocked email addresses:') }}</flux:text>
                             @foreach($form->blockedEmails as $blockedEmail)
-                                <flux:card class="p-3">
-                                    <div class="flex items-center justify-between">
-                                        <flux:text class="font-mono text-sm">{{ $blockedEmail->email }}</flux:text>
-                                        <flux:button
-                                            wire:click="removeBlockedEmail({{ $blockedEmail->id }})"
-                                            size="sm"
-                                            variant="ghost"
-                                            color="red"
-                                            wire:confirm="{{ __('Are you sure you want to remove this blocked email address?') }}"
-                                        >
-                                            {{ __('Remove') }}
-                                        </flux:button>
-                                    </div>
-                                </flux:card>
+                                <div wire:key="blocked-email-{{ $blockedEmail->id }}">
+                                    <flux:input :value="$blockedEmail->email" readonly variant="filled">
+                                        <x-slot name="iconTrailing">
+                                            <flux:button wire:click="removeBlockedEmail({{ $blockedEmail->id }})" size="sm" variant="subtle" icon="x-mark" class="-mr-1" wire:confirm="{{ __('Are you sure you want to remove this blocked email address?') }}" />
+                                        </x-slot>
+                                    </flux:input>
+                                </div>
                             @endforeach
                         </div>
                     @endif
@@ -306,6 +281,7 @@ new class extends Component {
                         <div class="flex-1">
                             <flux:input
                                 wire:model="new_blocked_email"
+                                wire:keydown.enter="addBlockedEmail"
                                 name="new_blocked_email"
                                 type="email"
                                 placeholder="spam@example.com"
@@ -313,11 +289,7 @@ new class extends Component {
                             />
                             <flux:error name="new_blocked_email" />
                         </div>
-                        <flux:button
-                            wire:click="addBlockedEmail"
-                            variant="primary"
-                            :disabled="empty($new_blocked_email)"
-                        >
+                        <flux:button wire:click="addBlockedEmail">
                             {{ __('Block Email') }}
                         </flux:button>
                     </div>

@@ -573,27 +573,10 @@ describe('blocked emails functionality', function () {
         Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
             ->set('new_blocked_email', 'spam@example.com')
             ->call('addBlockedEmail')
-            ->assertHasErrors(['new_blocked_email']);
+            ->assertHasErrors(['new_blocked_email' => 'unique']);
 
         $form->refresh();
         expect($form->blockedEmails()->count())->toBe(1);
-    });
-
-    it('trims whitespace from blocked email addresses', function () {
-        $user = User::factory()->create();
-        $form = Form::factory()->create([
-            'user_id' => $user->id,
-            'name' => 'Test Form',
-        ]);
-
-        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
-            ->set('new_blocked_email', '  spam@example.com  ')
-            ->call('addBlockedEmail');
-
-        $form->refresh();
-        expect($form->blockedEmails()->count())->toBe(1);
-        $blockedEmail = $form->blockedEmails()->first();
-        expect($blockedEmail->email)->toBe('spam@example.com');
     });
 
     it('handles case-insensitive email blocking', function () {
@@ -610,7 +593,7 @@ describe('blocked emails functionality', function () {
         Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
             ->set('new_blocked_email', 'SPAM@EXAMPLE.COM')
             ->call('addBlockedEmail')
-            ->assertHasErrors(['new_blocked_email']);
+            ->assertHasErrors(['new_blocked_email' => 'lowercase']);
 
         $form->refresh();
         expect($form->blockedEmails()->count())->toBe(1);
