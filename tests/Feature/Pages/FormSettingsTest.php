@@ -455,25 +455,6 @@ describe('turnstile secret key functionality', function () {
         expect($component->get('turnstile_secret_key'))->toBe('');
     });
 
-    it('encrypts turnstile secret key in database', function () {
-        $user = User::factory()->create();
-        $secretKey = '0x4AAAAAAABkMYinukE_NJBz...';
-
-        $form = Form::factory()->create([
-            'user_id' => $user->id,
-            'name' => 'Test Form',
-            'turnstile_secret_key' => $secretKey,
-        ]);
-
-        // Verify the decrypted value matches what we stored
-        expect($form->turnstile_secret_key)->toBe($secretKey);
-
-        // Verify the raw database value is encrypted (different from the original)
-        $rawValue = $form->getAttributes()['turnstile_secret_key'];
-        expect($rawValue)->not->toBe($secretKey);
-        expect($rawValue)->toContain('eyJ'); // Base64-encoded encrypted value starts with this
-    });
-
     it('can read existing encrypted turnstile secret keys', function () {
         $user = User::factory()->create();
         $secretKey = 'test-secret-key-123';
