@@ -146,8 +146,10 @@ class Form extends Model
 
     public function isEmailBlocked(array $data): bool
     {
-        // If no blocked emails are configured, allow all submissions
-        if ($this->blockedEmails()->count() === 0) {
+        // Get all blocked emails for this form (cached for performance)
+        $blockedEmails = $this->blockedEmails()->pluck('email')->toArray();
+        
+        if (empty($blockedEmails)) {
             return false;
         }
 
@@ -165,7 +167,7 @@ class Form extends Model
             $normalizedEmail = strtolower(trim($emailValue));
 
             // Check if this email is in the blocked list
-            if ($this->blockedEmails()->where('email', $normalizedEmail)->exists()) {
+            if (in_array($normalizedEmail, $blockedEmails)) {
                 return true;
             }
         }

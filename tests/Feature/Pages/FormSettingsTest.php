@@ -591,7 +591,9 @@ describe('blocked emails functionality', function () {
             ->call('addBlockedEmail');
 
         $form->refresh();
-        expect($form->blockedEmails()->first()->email)->toBe('spam@example.com');
+        expect($form->blockedEmails()->count())->toBe(1);
+        $blockedEmail = $form->blockedEmails()->first();
+        expect($blockedEmail->email)->toBe('spam@example.com');
     });
 
     it('handles case-insensitive email blocking', function () {
