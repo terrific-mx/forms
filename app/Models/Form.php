@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class Form extends Model
 {
@@ -103,8 +103,8 @@ class Form extends Model
 
         // Check if the honeypot field has any value (after trimming whitespace)
         $honeypotValue = trim($data[$this->honeypot_field] ?? '');
-        
-        return !empty($honeypotValue);
+
+        return ! empty($honeypotValue);
     }
 
     public function isTurnstileValid(?string $turnstileResponse, ?string $remoteIp = null): bool
@@ -120,17 +120,18 @@ class Form extends Model
         }
 
         try {
-            $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+            $response = Http::asForm()->post(config('services.turnstile.verify_url'), [
                 'secret' => $this->turnstile_secret_key,
                 'response' => $turnstileResponse,
                 'remoteip' => $remoteIp,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return false;
             }
 
             $result = $response->json();
+
             return $result['success'] ?? false;
         } catch (\Exception $e) {
             // Log the error if needed, but fail closed for security
