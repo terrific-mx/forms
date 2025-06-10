@@ -458,7 +458,7 @@ describe('blocked emails functionality', function () {
         ]);
     });
 
-    it('rejects submissions from blocked email addresses', function () {
+    it('redirects but does not process submissions from blocked email addresses', function () {
         $form = Form::factory()->create();
 
         // Add some blocked emails
@@ -470,13 +470,13 @@ describe('blocked emails functionality', function () {
             'email' => 'spam@example.com', // This is in the blocked list
         ]);
 
-        $response->assertStatus(403);
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
         assertDatabaseMissing('form_submissions', [
             'form_id' => $form->id,
         ]);
     });
 
-    it('handles case-insensitive email blocking', function () {
+    it('handles case-insensitive email blocking with redirect', function () {
         $form = Form::factory()->create();
 
         // Add blocked email in lowercase
@@ -487,7 +487,7 @@ describe('blocked emails functionality', function () {
             'email' => 'SPAM@EXAMPLE.COM', // Same email but uppercase
         ]);
 
-        $response->assertStatus(403);
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
         assertDatabaseMissing('form_submissions', [
             'form_id' => $form->id,
         ]);
@@ -529,7 +529,7 @@ describe('blocked emails functionality', function () {
         ]);
     });
 
-    it('blocks multiple email formats in form data', function () {
+    it('blocks multiple email formats in form data with redirect', function () {
         $form = Form::factory()->create();
 
         // Add blocked email
@@ -545,7 +545,26 @@ describe('blocked emails functionality', function () {
 
         foreach ($testCases as $data) {
             $response = post("/f/{$form->ulid}", array_merge($data, ['name' => 'Test']));
-            $response->assertStatus(403);
+            $response->assertRedirect("/f/{$form->ulid}/thank-you");
         }
+    });
+
+    it('redirects to custom URL when email is blocked and custom redirect is set', function () {
+        $form = Form::factory()->create([
+            'redirect_url' => 'https://example.com/custom-thank-you',
+        ]);
+
+        // Add blocked email
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'Spam Bot',
+            'email' => 'spam@example.com',
+        ]);
+
+        $response->assertRedirect('https://example.com/custom-thank-you');
+        assertDatabaseMissing('form_submissions', [
+            'form_id' => $form->id,
+        ]);
     });
 });
