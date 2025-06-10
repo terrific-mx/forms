@@ -2,6 +2,7 @@
 
 use App\Models\Form;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -318,5 +319,108 @@ describe('honeypot protection', function () {
         assertDatabaseMissing('form_submissions', [
             'form_id' => $form->id,
         ]);
+    });
+});
+
+describe('Cloudflare Turnstile integration', function () {
+    it('allows form submission when turnstile secret key is not configured', function () {
+        $form = Form::factory()->create([
+            'turnstile_secret_key' => null,
+        ]);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+        ]);
+
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
+        expect($form->submissions()->count())->toBe(1);
+    });
+
+    it('allows form submission when turnstile validation passes', function () {
+        $form = Form::factory()->create([
+            'turnstile_secret_key' => 'test-secret-key',
+        ]);
+
+        // Mock successful Turnstile verification
+        Http::fake([
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response([
+                'success' => true,
+            ], 200),
+        ]);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'cf-turnstile-response' => 'valid-turnstile-token',
+        ]);
+
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
+        expect($form->submissions()->count())->toBe(1);
+
+        // Verify the API was called with correct parameters
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://challenges.cloudflare.com/turnstile/v0/siteverify' &&
+                   $request->data()['secret'] === 'test-secret-key' &&
+                   $request->data()['response'] === 'valid-turnstile-token';
+        });
+    });
+
+    it('rejects form submission when turnstile validation fails', function () {
+        $form = Form::factory()->create([
+            'turnstile_secret_key' => 'test-secret-key',
+        ]);
+
+        // Mock failed Turnstile verification
+        Http::fake([
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response([
+                'success' => false,
+                'error-codes' => ['invalid-input-response'],
+            ], 200),
+        ]);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'cf-turnstile-response' => 'invalid-turnstile-token',
+        ]);
+
+        $response->assertStatus(403);
+        expect($form->submissions()->count())->toBe(0);
+    });
+
+    it('rejects form submission when turnstile response is missing and secret key is configured', function () {
+        $form = Form::factory()->create([
+            'turnstile_secret_key' => 'test-secret-key',
+        ]);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            // Missing cf-turnstile-response
+        ]);
+
+        $response->assertStatus(403);
+        expect($form->submissions()->count())->toBe(0);
+    });
+
+    it('handles turnstile API errors gracefully', function () {
+        $form = Form::factory()->create([
+            'turnstile_secret_key' => 'test-secret-key',
+        ]);
+
+        // Mock API error
+        Http::fake([
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response('', 500),
+        ]);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'cf-turnstile-response' => 'some-token',
+        ]);
+
+        $response->assertStatus(403);
+        expect($form->submissions()->count())->toBe(0);
     });
 });

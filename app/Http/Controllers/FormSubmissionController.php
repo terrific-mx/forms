@@ -28,6 +28,11 @@ class FormSubmissionController extends Controller
             return $this->redirectToThankYou($form);
         }
 
+        // Check Turnstile if configured
+        if (!$form->isTurnstileValid($request->input('cf-turnstile-response'), $request->ip())) {
+            abort(403, 'Turnstile validation failed');
+        }
+
         $submission = $form->submissions()->create([
             'data' => $data,
             'ip_address' => $request->ip(),
