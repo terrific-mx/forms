@@ -3,6 +3,11 @@
 use App\Models\Form;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
+
+use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\post;
 
 uses(RefreshDatabase::class);
 
@@ -13,14 +18,14 @@ it('stores all post data in the data field and redirects', function () {
         'field2' => 'value2',
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data, [
+    $response = post("/f/{$form->ulid}", $data, [
         'HTTP_USER_AGENT' => 'TestAgent/1.0',
         'HTTP_REFERER' => 'https://example.com/ref',
         'REMOTE_ADDR' => '123.123.123.123',
     ]);
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
 
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
         'ip_address' => '123.123.123.123',
         'user_agent' => 'TestAgent/1.0',
@@ -36,7 +41,7 @@ it('stores all post data in the data field and redirects', function () {
 
 it('returns 404 for non-existent form', function () {
     $ulid = Str::ulid();
-    $response = $this->post("/f/{$ulid}", [
+    $response = post("/f/{$ulid}", [
         'data' => ['foo' => 'bar'],
     ]);
     $response->assertNotFound();
@@ -52,7 +57,7 @@ it('sends notification to all emails in forward_to', function () {
         'field2' => 'value2',
     ];
 
-    $this->post("/f/{$form->ulid}", $data, [
+    post("/f/{$form->ulid}", $data, [
         'HTTP_USER_AGENT' => 'TestAgent/1.0',
         'HTTP_REFERER' => 'https://example.com/ref',
         'REMOTE_ADDR' => '123.123.123.123',
@@ -70,7 +75,7 @@ it('redirects to custom URL when redirect_url is set', function () {
         'field2' => 'value2',
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
     $response->assertRedirect('https://example.com/custom-thank-you');
 });
 
@@ -83,7 +88,7 @@ it('redirects to default thank you page when redirect_url is empty', function ()
         'field2' => 'value2',
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
 });
 
@@ -96,7 +101,7 @@ it('redirects to default thank you page when redirect_url is null', function () 
         'field2' => 'value2',
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
 });
 
@@ -106,12 +111,12 @@ it('allows submissions when no allowed domains are configured', function ($allow
     ]);
     $data = ['field1' => 'value1'];
 
-    $response = $this->post("/f/{$form->ulid}", $data, [
+    $response = post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://any-domain.com/page',
     ]);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
         'referrer' => 'https://any-domain.com/page',
     ]);
@@ -123,12 +128,12 @@ it('allows submissions from allowed domains', function () {
     ]);
     $data = ['field1' => 'value1'];
 
-    $response = $this->post("/f/{$form->ulid}", $data, [
+    $response = post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://example.com/contact',
     ]);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
         'referrer' => 'https://example.com/contact',
     ]);
@@ -140,12 +145,12 @@ it('allows submissions from allowed subdomains', function () {
     ]);
     $data = ['field1' => 'value1'];
 
-    $response = $this->post("/f/{$form->ulid}", $data, [
+    $response = post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://blog.example.com/post',
     ]);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
         'referrer' => 'https://blog.example.com/post',
     ]);
@@ -157,12 +162,12 @@ it('rejects submissions from non-allowed domains', function () {
     ]);
     $data = ['field1' => 'value1'];
 
-    $response = $this->post("/f/{$form->ulid}", $data, [
+    $response = post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://malicious.com/form',
     ]);
 
     $response->assertStatus(403);
-    $this->assertDatabaseMissing('form_submissions', [
+    assertDatabaseMissing('form_submissions', [
         'form_id' => $form->id,
         'referrer' => 'https://malicious.com/form',
     ]);
@@ -174,10 +179,10 @@ it('allows submissions when no referer header is present', function () {
     ]);
     $data = ['field1' => 'value1'];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
         'referrer' => null,
     ]);
@@ -189,12 +194,12 @@ it('handles allowed domains with whitespace correctly', function () {
     ]);
     $data = ['field1' => 'value1'];
 
-    $response = $this->post("/f/{$form->ulid}", $data, [
+    $response = post("/f/{$form->ulid}", $data, [
         'HTTP_REFERER' => 'https://mysite.org/contact',
     ]);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
         'referrer' => 'https://mysite.org/contact',
     ]);
@@ -209,10 +214,10 @@ it('allows submissions when honeypot field is not configured', function () {
         'secret_field' => 'bot_value', // This would normally be a honeypot
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
     ]);
 });
@@ -227,10 +232,10 @@ it('allows submissions when honeypot field is empty', function () {
         'website' => '', // Honeypot field is empty (good)
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
     ]);
 });
@@ -245,10 +250,10 @@ it('allows submissions when honeypot field is missing', function () {
         // No honeypot field included
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
     ]);
 });
@@ -263,10 +268,10 @@ it('rejects submissions when honeypot field has a value', function () {
         'website' => 'http://spam.com', // Honeypot field has value (bad)
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseMissing('form_submissions', [
+    assertDatabaseMissing('form_submissions', [
         'form_id' => $form->id,
     ]);
 });
@@ -281,10 +286,10 @@ it('trims honeypot field whitespace when checking', function () {
         'website' => '   ', // Only whitespace should be treated as empty
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
-    $this->assertDatabaseHas('form_submissions', [
+    assertDatabaseHas('form_submissions', [
         'form_id' => $form->id,
     ]);
 });
@@ -300,10 +305,10 @@ it('redirects to custom URL when honeypot is triggered and custom redirect is se
         'website' => 'http://spam.com', // Honeypot field has value (bad)
     ];
 
-    $response = $this->post("/f/{$form->ulid}", $data);
+    $response = post("/f/{$form->ulid}", $data);
 
     $response->assertRedirect('https://example.com/custom-thank-you');
-    $this->assertDatabaseMissing('form_submissions', [
+    assertDatabaseMissing('form_submissions', [
         'form_id' => $form->id,
     ]);
 });
