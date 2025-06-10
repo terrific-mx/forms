@@ -392,3 +392,53 @@ describe('authentication', function () {
             ->assertRedirect('/login');
     });
 });
+
+describe('turnstile secret key functionality', function () {
+    it('can update turnstile secret key', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+        ]);
+
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('turnstile_secret_key', '0x4AAAAAAABkMYinukE_NJBz...')
+            ->call('save');
+
+        assertDatabaseHas('forms', [
+            'id' => $form->id,
+            'turnstile_secret_key' => '0x4AAAAAAABkMYinukE_NJBz...',
+        ]);
+    });
+
+    it('can clear turnstile secret key', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+            'turnstile_secret_key' => 'existing-key',
+        ]);
+
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('turnstile_secret_key', '')
+            ->call('save');
+
+        assertDatabaseHas('forms', [
+            'id' => $form->id,
+            'turnstile_secret_key' => null,
+        ]);
+    });
+
+    it('initializes turnstile_secret_key field correctly', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+            'turnstile_secret_key' => 'test-secret-key',
+        ]);
+
+        $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
+
+        expect($component->get('turnstile_secret_key'))->toBe('test-secret-key');
+    });
+});

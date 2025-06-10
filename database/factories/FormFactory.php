@@ -23,6 +23,7 @@ class FormFactory extends Factory
             'logo_path' => null,
             'allowed_domains' => null,
             'honeypot_field' => null,
+            'turnstile_secret_key' => null,
         ];
     }
 }

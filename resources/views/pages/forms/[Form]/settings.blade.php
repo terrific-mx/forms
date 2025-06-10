@@ -20,6 +20,7 @@ new class extends Component {
     public string $redirect_url = '';
     public string $allowed_domains = '';
     public string $honeypot_field = '';
+    public string $turnstile_secret_key = '';
     public array $forward_to_emails = [];
     public $logo;
 
@@ -30,6 +31,7 @@ new class extends Component {
         $this->redirect_url = $this->form->redirect_url ?? '';
         $this->allowed_domains = $this->form->allowed_domains ?? '';
         $this->honeypot_field = $this->form->honeypot_field ?? '';
+        $this->turnstile_secret_key = $this->form->turnstile_secret_key ?? '';
     }
 
     public function save()
@@ -42,6 +44,7 @@ new class extends Component {
             'redirect_url' => 'nullable|url',
             'allowed_domains' => 'nullable|string',
             'honeypot_field' => 'nullable|string|max:255',
+            'turnstile_secret_key' => 'nullable|string|max:255',
             'forward_to_emails.*' => 'sometimes|email',
             'logo' => 'nullable|image|max:2048',
         ]);
@@ -52,6 +55,7 @@ new class extends Component {
             'redirect_url' => $this->redirect_url,
             'allowed_domains' => $this->allowed_domains,
             'honeypot_field' => $this->honeypot_field ?: null,
+            'turnstile_secret_key' => $this->turnstile_secret_key ?: null,
         ];
 
         if ($this->logo) {
@@ -181,6 +185,16 @@ new class extends Component {
                     :badge="__('Optional')"
                     :description:trailing="__('Name of a hidden field to catch spam bots. If a submission includes this field with a value, it will be rejected. Leave empty to disable spam protection.')"
                     placeholder="website"
+                />
+
+                <flux:input
+                    wire:model="turnstile_secret_key"
+                    name="turnstile_secret_key"
+                    type="password"
+                    :label="__('Cloudflare Turnstile Secret Key')"
+                    :badge="__('Optional')"
+                    :description:trailing="__('Secret key for Cloudflare Turnstile verification. If provided, all form submissions must include a valid Turnstile token. Leave empty to disable Turnstile protection.')"
+                    placeholder="0x4AAAAAAABkMYinukE_NJBz..."
                 />
 
                 <div class="flex max-sm:flex-col-reverse items-center max:sm:flex-col justify-end gap-3 max-sm:*:w-full">
