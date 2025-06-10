@@ -25,7 +25,7 @@ class FormSubmissionController extends Controller
         // Check honeypot field if configured
         if ($form->isHoneypotTriggered($data)) {
             // Return 200 status to avoid giving bots feedback, but don't process the submission
-            return redirect($form->redirect_url ?: "/f/{$form->ulid}/thank-you");
+            return $this->redirectToThankYou($form);
         }
 
         $submission = $form->submissions()->create([
@@ -39,6 +39,11 @@ class FormSubmissionController extends Controller
             ->each(fn ($email) => Notification::route('mail', $email)
                 ->notify(new FormSubmissionReceived($form, $submission)));
 
+        return $this->redirectToThankYou($form);
+    }
+
+    private function redirectToThankYou(Form $form)
+    {
         return redirect($form->redirect_url ?: "/f/{$form->ulid}/thank-you");
     }
 }
