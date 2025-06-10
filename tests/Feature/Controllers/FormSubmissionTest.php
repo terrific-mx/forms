@@ -424,3 +424,128 @@ describe('Cloudflare Turnstile integration', function () {
         expect($form->submissions()->count())->toBe(0);
     });
 });
+
+describe('blocked emails functionality', function () {
+    it('allows submissions when no blocked emails are configured', function () {
+        $form = Form::factory()->create();
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+        ]);
+
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
+        assertDatabaseHas('form_submissions', [
+            'form_id' => $form->id,
+        ]);
+    });
+
+    it('allows submissions from non-blocked email addresses', function () {
+        $form = Form::factory()->create();
+
+        // Add some blocked emails
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+        $form->blockedEmails()->create(['email' => 'troll@badsite.org']);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => 'john@example.com', // Not in blocked list
+        ]);
+
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
+        assertDatabaseHas('form_submissions', [
+            'form_id' => $form->id,
+        ]);
+    });
+
+    it('rejects submissions from blocked email addresses', function () {
+        $form = Form::factory()->create();
+
+        // Add some blocked emails
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+        $form->blockedEmails()->create(['email' => 'troll@badsite.org']);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'Spam Bot',
+            'email' => 'spam@example.com', // This is in the blocked list
+        ]);
+
+        $response->assertStatus(403);
+        assertDatabaseMissing('form_submissions', [
+            'form_id' => $form->id,
+        ]);
+    });
+
+    it('handles case-insensitive email blocking', function () {
+        $form = Form::factory()->create();
+
+        // Add blocked email in lowercase
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'Spam Bot',
+            'email' => 'SPAM@EXAMPLE.COM', // Same email but uppercase
+        ]);
+
+        $response->assertStatus(403);
+        assertDatabaseMissing('form_submissions', [
+            'form_id' => $form->id,
+        ]);
+    });
+
+    it('allows submissions when email field is missing', function () {
+        $form = Form::factory()->create();
+
+        // Add some blocked emails
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'message' => 'Hello world',
+            // No email field provided
+        ]);
+
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
+        assertDatabaseHas('form_submissions', [
+            'form_id' => $form->id,
+        ]);
+    });
+
+    it('allows submissions when email field is empty', function () {
+        $form = Form::factory()->create();
+
+        // Add some blocked emails
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        $response = post("/f/{$form->ulid}", [
+            'name' => 'John Doe',
+            'email' => '', // Empty email field
+            'message' => 'Hello world',
+        ]);
+
+        $response->assertRedirect("/f/{$form->ulid}/thank-you");
+        assertDatabaseHas('form_submissions', [
+            'form_id' => $form->id,
+        ]);
+    });
+
+    it('blocks multiple email formats in form data', function () {
+        $form = Form::factory()->create();
+
+        // Add blocked email
+        $form->blockedEmails()->create(['email' => 'spam@example.com']);
+
+        // Test different field names that might contain emails
+        $testCases = [
+            ['email' => 'spam@example.com'],
+            ['user_email' => 'spam@example.com'],
+            ['contact_email' => 'spam@example.com'],
+            ['from' => 'spam@example.com'],
+        ];
+
+        foreach ($testCases as $data) {
+            $response = post("/f/{$form->ulid}", array_merge($data, ['name' => 'Test']));
+            $response->assertStatus(403);
+        }
+    });
+});
