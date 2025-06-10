@@ -280,48 +280,53 @@ it('requires authentication to access form settings', function () {
         ->assertRedirect('/login');
 });
 
-it('can upload and update form logo', function () {
-    Storage::fake('public');
-
+it('can configure honeypot field', function () {
     $user = User::factory()->create();
     $form = Form::factory()->create([
         'user_id' => $user->id,
         'name' => 'Test Form',
+        'honeypot_field' => null,
     ]);
-
-    $file = UploadedFile::fake()->image('logo.png', 100, 100);
 
     Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
         ->set('name', 'Test Form')
-        ->set('logo', $file)
+        ->set('honeypot_field', 'website')
         ->call('save');
 
-    $form->refresh();
-
-    expect($form->logo_path)->not->toBeNull();
-    expect(Storage::disk('public')->exists($form->logo_path))->toBeTrue();
+    assertDatabaseHas('forms', [
+        'id' => $form->id,
+        'honeypot_field' => 'website',
+    ]);
 });
 
-it('can remove form logo', function () {
-    Storage::fake('public');
-
+it('can clear honeypot field', function () {
     $user = User::factory()->create();
-
-    // Create a form with a logo
-    $file = UploadedFile::fake()->image('logo.png', 100, 100);
-    $logoPath = $file->store('form-logos', 'public');
-
     $form = Form::factory()->create([
         'user_id' => $user->id,
         'name' => 'Test Form',
-        'logo_path' => $logoPath,
+        'honeypot_field' => 'website',
     ]);
 
     Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
-        ->call('removeLogo');
+        ->set('name', 'Test Form')
+        ->set('honeypot_field', '')
+        ->call('save');
 
-    $form->refresh();
+    assertDatabaseHas('forms', [
+        'id' => $form->id,
+        'honeypot_field' => '',
+    ]);
+});
 
-    expect($form->logo_path)->toBeNull();
-    expect(Storage::disk('public')->exists($logoPath))->toBeFalse();
+it('initializes honeypot_field correctly', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Test Form',
+        'honeypot_field' => 'website',
+    ]);
+
+    $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
+
+    expect($component->get('honeypot_field'))->toBe('website');
 });

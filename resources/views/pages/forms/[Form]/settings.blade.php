@@ -19,6 +19,7 @@ new class extends Component {
     public string $forward_to = '';
     public string $redirect_url = '';
     public string $allowed_domains = '';
+    public string $honeypot_field = '';
     public array $forward_to_emails = [];
     public $logo;
 
@@ -28,6 +29,7 @@ new class extends Component {
         $this->forward_to = $this->form->forward_to ?? '';
         $this->redirect_url = $this->form->redirect_url ?? '';
         $this->allowed_domains = $this->form->allowed_domains ?? '';
+        $this->honeypot_field = $this->form->honeypot_field ?? '';
     }
 
     public function save()
@@ -39,6 +41,7 @@ new class extends Component {
             'forward_to' => 'nullable|string',
             'redirect_url' => 'nullable|url',
             'allowed_domains' => 'nullable|string',
+            'honeypot_field' => 'nullable|string|max:255',
             'forward_to_emails.*' => 'sometimes|email',
             'logo' => 'nullable|image|max:2048',
         ]);
@@ -48,6 +51,7 @@ new class extends Component {
             'forward_to' => implode("\n", $this->forward_to_emails),
             'redirect_url' => $this->redirect_url,
             'allowed_domains' => $this->allowed_domains,
+            'honeypot_field' => $this->honeypot_field,
         ];
 
         if ($this->logo) {
@@ -168,6 +172,15 @@ new class extends Component {
                     :badge="__('Optional')"
                     :description:trailing="__('Comma-separated list of domains that can submit to this form (e.g., example.com, mysite.org). If left empty, submissions from any domain will be accepted.')"
                     placeholder="example.com, mysite.org"
+                />
+
+                <flux:input
+                    wire:model="honeypot_field"
+                    name="honeypot_field"
+                    :label="__('Honeypot Field Name')"
+                    :badge="__('Optional')"
+                    :description:trailing="__('Name of a hidden field to catch spam bots. If a submission includes this field with a value, it will be rejected. Leave empty to disable spam protection.')"
+                    placeholder="website"
                 />
 
                 <div class="flex max-sm:flex-col-reverse items-center max:sm:flex-col justify-end gap-3 max-sm:*:w-full">

@@ -22,6 +22,12 @@ class FormSubmissionController extends Controller
 
         $data = $request->all();
 
+        // Check honeypot field if configured
+        if ($form->isHoneypotTriggered($data)) {
+            // Return 200 status to avoid giving bots feedback, but don't process the submission
+            return redirect($form->redirect_url ?: "/f/{$form->ulid}/thank-you");
+        }
+
         $submission = $form->submissions()->create([
             'data' => $data,
             'ip_address' => $request->ip(),
