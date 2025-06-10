@@ -31,7 +31,8 @@ new class extends Component {
         $this->redirect_url = $this->form->redirect_url ?? '';
         $this->allowed_domains = $this->form->allowed_domains ?? '';
         $this->honeypot_field = $this->form->honeypot_field ?? '';
-        $this->turnstile_secret_key = $this->form->turnstile_secret_key ?? '';
+        // Don't prefill encrypted secret key for security
+        $this->turnstile_secret_key = '';
     }
 
     public function save()
@@ -55,8 +56,13 @@ new class extends Component {
             'redirect_url' => $this->redirect_url,
             'allowed_domains' => $this->allowed_domains,
             'honeypot_field' => $this->honeypot_field ?: null,
-            'turnstile_secret_key' => $this->turnstile_secret_key ?: null,
         ];
+
+        // Only update turnstile_secret_key if a value was provided
+        // This allows keeping the existing encrypted key when field is left empty
+        if ($this->turnstile_secret_key !== '') {
+            $updateData['turnstile_secret_key'] = $this->turnstile_secret_key;
+        }
 
         if ($this->logo) {
             $updateData['logo_path'] = $this->handleLogoUpload();
@@ -87,6 +93,12 @@ new class extends Component {
         $this->deleteCurrentLogo();
         $this->form->update(['logo_path' => null]);
         Flux::toast('Logo removed successfully.');
+    }
+
+    public function clearTurnstileKey()
+    {
+        $this->form->update(['turnstile_secret_key' => null]);
+        Flux::toast('Turnstile secret key removed successfully.');
     }
 }; ?>
 
@@ -187,15 +199,40 @@ new class extends Component {
                     placeholder="website"
                 />
 
-                <flux:input
-                    wire:model="turnstile_secret_key"
-                    name="turnstile_secret_key"
-                    type="password"
-                    :label="__('Cloudflare Turnstile Secret Key')"
-                    :badge="__('Optional')"
-                    :description:trailing="__('Secret key for Cloudflare Turnstile verification. If provided, all form submissions must include a valid Turnstile token. Leave empty to disable Turnstile protection.')"
-                    placeholder="0x4AAAAAAABkMYinukE_NJBz..."
-                />
+                <div class="space-y-3">
+                    <div>
+                        <flux:label>{{ __('Cloudflare Turnstile Secret Key') }}</flux:label>
+                        <flux:badge variant="warning" size="sm">{{ __('Optional') }}</flux:badge>
+                    </div>
+
+                    @if($form->turnstile_secret_key)
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 min-w-0">
+                                <flux:text variant="strong">{{ __('Secret Key Configured') }}</flux:text>
+                                <flux:text size="sm">
+                                    {{ __('A Turnstile secret key is currently configured. Enter a new key to replace it or leave empty to keep the current key.') }}
+                                </flux:text>
+                                <flux:button
+                                    wire:click="clearTurnstileKey"
+                                    size="sm"
+                                    variant="danger"
+                                    class="mt-2"
+                                    wire:confirm="{{ __('Are you sure you want to remove the current Turnstile secret key?') }}"
+                                >
+                                    {{ __('Remove Secret Key') }}
+                                </flux:button>
+                            </div>
+                        </div>
+                    @endif
+
+                    <flux:input
+                        wire:model="turnstile_secret_key"
+                        name="turnstile_secret_key"
+                        type="password"
+                        :placeholder="$form->turnstile_secret_key ? __('Enter new key to replace existing') : __('0x4AAAAAAABkMYinukE_NJBz...')"
+                        :description:trailing="__('Secret key for Cloudflare Turnstile verification. If provided, all form submissions must include a valid Turnstile token. Leave empty to disable Turnstile protection.')"
+                    />
+                </div>
 
                 <div class="flex max-sm:flex-col-reverse items-center max:sm:flex-col justify-end gap-3 max-sm:*:w-full">
                     <flux:button href="/forms/{{ $form->id }}" variant="ghost" wire:navigate>{{ __('Cancel') }}</flux:button>

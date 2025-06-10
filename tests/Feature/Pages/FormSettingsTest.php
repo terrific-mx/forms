@@ -405,10 +405,8 @@ describe('turnstile secret key functionality', function () {
             ->set('turnstile_secret_key', '0x4AAAAAAABkMYinukE_NJBz...')
             ->call('save');
 
-        assertDatabaseHas('forms', [
-            'id' => $form->id,
-            'turnstile_secret_key' => '0x4AAAAAAABkMYinukE_NJBz...',
-        ]);
+        $form->refresh();
+        expect($form->turnstile_secret_key)->toBe('0x4AAAAAAABkMYinukE_NJBz...');
     });
 
     it('can clear turnstile secret key', function () {
@@ -420,13 +418,27 @@ describe('turnstile secret key functionality', function () {
         ]);
 
         Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
-            ->set('turnstile_secret_key', '')
+            ->call('clearTurnstileKey');
+
+        $form->refresh();
+        expect($form->turnstile_secret_key)->toBeNull();
+    });
+
+    it('preserves existing turnstile key when field is left empty', function () {
+        $user = User::factory()->create();
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+            'turnstile_secret_key' => 'existing-key',
+        ]);
+
+        // Save without changing the turnstile key (field left empty)
+        Volt::actingAs($user)->test('pages.form.settings', ['form' => $form])
+            ->set('name', 'Updated Form')
             ->call('save');
 
-        assertDatabaseHas('forms', [
-            'id' => $form->id,
-            'turnstile_secret_key' => null,
-        ]);
+        $form->refresh();
+        expect($form->turnstile_secret_key)->toBe('existing-key');
     });
 
     it('initializes turnstile_secret_key field correctly', function () {
@@ -439,6 +451,44 @@ describe('turnstile secret key functionality', function () {
 
         $component = Volt::actingAs($user)->test('pages.form.settings', ['form' => $form]);
 
-        expect($component->get('turnstile_secret_key'))->toBe('test-secret-key');
+        // Should not prefill encrypted key for security
+        expect($component->get('turnstile_secret_key'))->toBe('');
+    });
+
+    it('encrypts turnstile secret key in database', function () {
+        $user = User::factory()->create();
+        $secretKey = '0x4AAAAAAABkMYinukE_NJBz...';
+
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+            'turnstile_secret_key' => $secretKey,
+        ]);
+
+        // Verify the decrypted value matches what we stored
+        expect($form->turnstile_secret_key)->toBe($secretKey);
+
+        // Verify the raw database value is encrypted (different from the original)
+        $rawValue = $form->getAttributes()['turnstile_secret_key'];
+        expect($rawValue)->not->toBe($secretKey);
+        expect($rawValue)->toContain('eyJ'); // Base64-encoded encrypted value starts with this
+    });
+
+    it('can read existing encrypted turnstile secret keys', function () {
+        $user = User::factory()->create();
+        $secretKey = 'test-secret-key-123';
+
+        // Create a form with encrypted key
+        $form = Form::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Form',
+            'turnstile_secret_key' => $secretKey,
+        ]);
+
+        // Save and reload to ensure it goes through the encryption/decryption cycle
+        $formId = $form->id;
+        $reloadedForm = Form::find($formId);
+
+        expect($reloadedForm->turnstile_secret_key)->toBe($secretKey);
     });
 });
