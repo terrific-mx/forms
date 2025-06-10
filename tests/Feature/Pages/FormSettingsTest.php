@@ -360,7 +360,7 @@ it('can clear honeypot field', function () {
 
     assertDatabaseHas('forms', [
         'id' => $form->id,
-        'honeypot_field' => '',
+        'honeypot_field' => null,
     ]);
 });
 
