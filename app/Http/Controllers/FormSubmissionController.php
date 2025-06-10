@@ -35,7 +35,8 @@ class FormSubmissionController extends Controller
 
         // Check if email is blocked
         if ($form->isEmailBlocked($data)) {
-            abort(403, 'Email address is blocked');
+            // Return 200 status to avoid giving bots feedback, but don't process the submission
+            return $this->redirectToThankYou($form);
         }
 
         $submission = $form->submissions()->create([
