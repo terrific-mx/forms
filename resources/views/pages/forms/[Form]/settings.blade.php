@@ -51,7 +51,7 @@ new class extends Component {
             'forward_to' => implode("\n", $this->forward_to_emails),
             'redirect_url' => $this->redirect_url,
             'allowed_domains' => $this->allowed_domains,
-            'honeypot_field' => $this->honeypot_field,
+            'honeypot_field' => $this->honeypot_field ?: null,
         ];
 
         if ($this->logo) {
