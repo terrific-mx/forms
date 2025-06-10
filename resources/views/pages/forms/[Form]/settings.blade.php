@@ -69,6 +69,7 @@ new class extends Component {
         }
 
         $this->form->update($updateData);
+        $this->reset('logo', 'turnstile_secret_key');
         Flux::toast('Form settings updated successfully.');
     }
 
@@ -206,23 +207,19 @@ new class extends Component {
                     </div>
 
                     @if($form->turnstile_secret_key)
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1 min-w-0">
-                                <flux:text variant="strong">{{ __('Secret Key Configured') }}</flux:text>
-                                <flux:text size="sm">
-                                    {{ __('A Turnstile secret key is currently configured. Enter a new key to replace it or leave empty to keep the current key.') }}
-                                </flux:text>
+                        <flux:callout icon="shield-check" variant="secondary">
+                            <flux:callout.heading>{{ __('Turnstile Protection Active') }}</flux:callout.heading>
+                            <flux:callout.text>{{ __('A Turnstile secret key is currently configured and protecting your form from spam. Enter a new key to replace it or leave the field empty to keep the current key.') }}</flux:callout.text>
+                            <x-slot name="actions">
                                 <flux:button
                                     wire:click="clearTurnstileKey"
                                     size="sm"
-                                    variant="danger"
-                                    class="mt-2"
                                     wire:confirm="{{ __('Are you sure you want to remove the current Turnstile secret key?') }}"
                                 >
-                                    {{ __('Remove Secret Key') }}
+                                    {{ __('Remove Protection') }}
                                 </flux:button>
-                            </div>
-                        </div>
+                            </x-slot>
+                        </flux:callout>
                     @endif
 
                     <flux:input
