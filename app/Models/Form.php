@@ -88,4 +88,17 @@ class Form extends Model
 
         return false;
     }
+
+    public function isHoneypotTriggered(array $data): bool
+    {
+        // If no honeypot field is configured, allow all submissions
+        if (empty($this->honeypot_field)) {
+            return false;
+        }
+
+        // Check if the honeypot field has any value (after trimming whitespace)
+        $honeypotValue = trim($data[$this->honeypot_field] ?? '');
+        
+        return !empty($honeypotValue);
+    }
 }

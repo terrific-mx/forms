@@ -266,7 +266,7 @@ it('rejects submissions when honeypot field has a value', function () {
 
     $response = $this->post("/f/{$form->ulid}", $data);
 
-    $response->assertStatus(403);
+    $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseMissing('form_submissions', [
         'form_id' => $form->id,
     ]);
@@ -286,6 +286,25 @@ it('trims honeypot field whitespace when checking', function () {
 
     $response->assertRedirect("/f/{$form->ulid}/thank-you");
     $this->assertDatabaseHas('form_submissions', [
+        'form_id' => $form->id,
+    ]);
+});
+
+it('redirects to custom URL when honeypot is triggered and custom redirect is set', function () {
+    $form = Form::factory()->create([
+        'honeypot_field' => 'website',
+        'redirect_url' => 'https://example.com/custom-thank-you',
+    ]);
+    $data = [
+        'name' => 'Bot Name',
+        'email' => 'bot@example.com',
+        'website' => 'http://spam.com', // Honeypot field has value (bad)
+    ];
+
+    $response = $this->post("/f/{$form->ulid}", $data);
+
+    $response->assertRedirect('https://example.com/custom-thank-you');
+    $this->assertDatabaseMissing('form_submissions', [
         'form_id' => $form->id,
     ]);
 });

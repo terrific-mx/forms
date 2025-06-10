@@ -22,6 +22,7 @@ class FormFactory extends Factory
             'redirect_url' => null,
             'logo_path' => null,
             'allowed_domains' => null,
+            'honeypot_field' => null,
         ];
     }
 }
