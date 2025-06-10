@@ -8,48 +8,52 @@ use function Pest\Laravel\get;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-it('redirects guests to the login page', function () {
-    get('/dashboard')->assertRedirect('/login');
+describe('dashboard access', function () {
+    it('redirects guests to the login page', function () {
+        get('/dashboard')->assertRedirect('/login');
+    });
+
+    it('allows authenticated users to visit the dashboard', function () {
+        $user = User::factory()->create();
+
+        actingAs($user)->get('/dashboard')->assertOk();
+    });
 });
 
-it('allows authenticated users to visit the dashboard', function () {
-    $user = User::factory()->create();
+describe('dashboard display', function () {
+    it('shows created forms on the dashboard', function () {
+        $user = User::factory()->create();
 
-    actingAs($user)->get('/dashboard')->assertOk();
-});
+        Form::factory()->for($user)->count(3)->sequence(
+            ['name' => 'Contact Form'],
+            ['name' => 'Feedback Form'],
+            ['name' => 'Registration Form'],
+        )->create();
 
-it('shows created forms on the dashboard', function () {
-    $user = User::factory()->create();
+        $response = actingAs($user)->get('/dashboard');
 
-    Form::factory()->for($user)->count(3)->sequence(
-        ['name' => 'Contact Form'],
-        ['name' => 'Feedback Form'],
-        ['name' => 'Registration Form'],
-    )->create();
+        $response->assertOk();
+        $response->assertSee('Contact Form');
+        $response->assertSee('Feedback Form');
+        $response->assertSee('Registration Form');
+    });
 
-    $response = actingAs($user)->get('/dashboard');
+    it('shows only the authenticated user\'s forms on the dashboard', function () {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
-    $response->assertOk();
-    $response->assertSee('Contact Form');
-    $response->assertSee('Feedback Form');
-    $response->assertSee('Registration Form');
-});
+        // Forms for the authenticated user
+        Form::factory()->for($user)->create(['name' => 'Contact Form']);
+        Form::factory()->for($user)->create(['name' => 'Feedback Form']);
+        // Form for another user
+        Form::factory()->for($otherUser)->create(['name' => 'Other User Form']);
 
-it('shows only the authenticated user\'s forms on the dashboard', function () {
-    $user = User::factory()->create();
-    $otherUser = User::factory()->create();
+        $this->actingAs($user);
+        $response = $this->get('/dashboard');
 
-    // Forms for the authenticated user
-    Form::factory()->for($user)->create(['name' => 'Contact Form']);
-    Form::factory()->for($user)->create(['name' => 'Feedback Form']);
-    // Form for another user
-    Form::factory()->for($otherUser)->create(['name' => 'Other User Form']);
-
-    $this->actingAs($user);
-    $response = $this->get('/dashboard');
-
-    $response->assertOk();
-    $response->assertSee('Contact Form');
-    $response->assertSee('Feedback Form');
-    $response->assertDontSee('Other User Form');
+        $response->assertOk();
+        $response->assertSee('Contact Form');
+        $response->assertSee('Feedback Form');
+        $response->assertDontSee('Other User Form');
+    });
 });

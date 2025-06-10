@@ -5,37 +5,43 @@ use Livewire\Volt\Volt;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('profile page is displayed', function () {
-    $this->actingAs($user = User::factory()->create());
+describe('profile page access', function () {
+    test('profile page is displayed', function () {
+        $this->actingAs($user = User::factory()->create());
 
-    $this->get('/settings/profile')->assertOk();
+        $this->get('/settings/profile')->assertOk();
+    });
 });
 
-test('profile information can be updated', function () {
-    $user = User::factory()->create();
+describe('profile management', function () {
+    test('profile information can be updated', function () {
+        $user = User::factory()->create();
 
-    $this->actingAs($user);
+        $this->actingAs($user);
 
-    $response = Volt::test('settings.profile')
-        ->set('name', 'Test User')
-        ->call('updateProfileInformation');
+        $response = Volt::test('settings.profile')
+            ->set('name', 'Test User')
+            ->call('updateProfileInformation');
 
-    $response->assertHasNoErrors();
+        $response->assertHasNoErrors();
 
-    $user->refresh();
+        $user->refresh();
 
-    expect($user->name)->toEqual('Test User');
+        expect($user->name)->toEqual('Test User');
+    });
 });
 
-test('user can delete their account', function () {
-    $user = User::factory()->create();
+describe('account deletion', function () {
+    test('user can delete their account', function () {
+        $user = User::factory()->create();
 
-    $this->actingAs($user);
+        $this->actingAs($user);
 
-    $response = Volt::test('settings.delete-user-form')
-        ->call('deleteUser');
+        $response = Volt::test('settings.delete-user-form')
+            ->call('deleteUser');
 
-    $response->assertRedirect('/');
+        $response->assertRedirect('/');
 
-    expect($user->fresh())->toBeNull();
+        expect($user->fresh())->toBeNull();
+    });
 });
